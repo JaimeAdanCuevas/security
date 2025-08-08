@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# $Id: UpdateMIV 3015 2014-06-21 16:06:24Z amr\sesmith $
+
+
+Log=UpdateMIV.log
+
+Source="/lab/$PROJECT/MivSoftware/"
+Target="/usr/local/MivSoftware/"
+
+echo "UpdateMIV Log" > $Log
+echo "" >> $Log
+
+echo "Source: $Source" >> $Log
+echo "Target: $Target" >> $Log
+echo "" >> $Log
+
+rsync -avz --exclude=.svn --ignore-errors -e "ssh -o batchMode=yes" $UpdateServer:$Source $Target  2>&1 | tee -a $Log
+ 
+Status=$?
+
+exit $Status

@@ -1,0 +1,9 @@
+UpdateNvmTools
+UpdateAutomation
+UpdateSvos
+UpdatePythonSV
+UpdateRbv
+Pass UpdateTWIDL
+Pass UpdateUefiNvmCli
+UpdateValTools
+python /runner/bin/scripts/clear-oserrors.py

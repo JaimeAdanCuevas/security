@@ -1,0 +1,179 @@
+#!/bin/bash
+#****************************************************************************
+# $Id: UpdateNvmTools 466 2015-09-08 18:11:10Z amr\sesmith $
+#****************************************************************************
+# INTEL CONFIDENTIAL
+# This file, software, or program is supplied under the terms of a license
+# agreement or non-disclosure agreement with INTEL Corporation and may not be
+# copied or disclosed except in accordance with the terms of that agreement.
+#*******************************************************************************
+#
+# Update NvmTools Script
+#
+#*******************************************************************************
+#
+# $Id: UpdateNvmTools 466 2015-09-08 18:11:10Z amr\sesmith $
+#
+
+Tool="UpdateNvmTools"
+Class=""
+
+Setup=DpSetup
+
+if [ -e $NvmTools/bin/Update.inc ]
+then
+  . $NvmTools/bin/Update.inc
+else
+  echo "Error: cannot find $NvmTools/bin/Update.inc"
+  exit -1
+fi
+
+# Get System Type
+
+Type=None
+
+if [ -e /etc/centos-release ]
+then
+  Type="CentOS"
+fi
+
+if [ -e /etc/debian_version ]
+then
+  Type="SVOS"
+  
+  if [ -e /etc/lsb-release ]
+  then
+    Type="Client"
+  fi
+fi
+
+
+if [ $Type = "None" ]
+then
+  echo "Error: Cannot Determine System Type"
+  exit -1
+fi
+
+cd /
+
+NvmToolsDir=$UpdateDir/NvmTools$Class
+
+echo "NvmTools Dir:      $NvmToolsDir"    | tee -a $Log
+echo "NvmTools Home:     $NvmTools"       | tee -a $Log
+echo "System Type:       $Type"           | tee -a $Log
+echo "Site:              $Site"           | tee -a $Log
+echo "Setup:             $Setup"          | tee -a $Log
+
+echo "" | tee -a $Log
+
+echo "Check NvmTools svninfo.log" | tee -a $Log
+
+for Pass in 1 2 3
+do
+  echo Pass: $Pass | tee -a $Log
+  echo ssh $UpdateServer cat $NvmToolsDir/svninfo.log >> $Log 2>&1
+   
+  SvnInfo=`ssh $UpdateServer cat $NvmToolsDir/svninfo.log 2>/dev/null`
+  
+  Status=$?
+ 
+  echo Status $Status | tee -a $Log
+ 
+  if [ $Status -eq 0 ] 
+  then
+    break
+  fi
+  
+done
+
+if [ $Status -ne 0 ] 
+then
+  echo "Error: scp $Status" | tee -a $Log
+  echo "Error: Unable to get NvmTools svninfo" >> $Log
+  echo "Error: Unable to get NvmTools svninfo" >&2
+  exit $Status
+fi
+
+# Compare the Log files
+
+if [ -e $NvmTools/NvmTools.rev ]
+then
+  echo "$SvnInfo" | diff - $NvmTools/NvmTools.rev > /dev/null
+
+  Status=$?
+
+  if [ $Status -eq 0 ]
+  then
+    echo "NvmTools Release is Current, Update Done" | tee -a $Log
+    exit 0
+  fi
+fi
+
+echo "Update NvmTools Files" | tee -a $Log
+
+for Source in $Type $Site
+do
+  echo "" | tee -a $Log
+  echo "Update $Source" | tee -a $Log
+
+  for Pass in 1 2 3
+  do
+    echo Pass: $Pass | tee -a $Log
+    rsync -avz --exclude=.svn --ignore-errors -e "ssh -o batchMode=yes" \
+      $UpdateServer:$NvmToolsDir/Linux/$Source/ /  2>&1 | tee -a $Log
+ 
+    Status=$?
+ 
+    echo Status $Status | tee -a $Log
+ 
+    if [ $Status -eq 0 ]
+    then
+      break
+    fi
+  done
+
+  if [ $Status -ne 0 ]
+  then
+    echo "Error: rsync $Source, Status: $Status" >> $Log
+    echo "Error: rsync $Source, Status: $Status" >&2
+    exit 1
+  fi
+done
+
+echo "" | tee -a $Log
+echo "Start Setup Scripts" | tee -a $Log
+echo "" | tee -a $Log
+
+
+echo "Run $Setup" | tee -a $Log
+
+if [ -x $NvmTools/bin/$Setup ]
+then
+
+  $NvmTools/bin/$Setup 2>&1 | tee -a $Log
+  Status=$?
+
+else
+  Message="Error: $NvmTools/bin/$Setup Script Does not Exists"
+  echo $Message >> $Log
+  echo $Message >&2
+  exit 1
+fi
+
+if [ $Status -ne 0 ]
+then
+  Message="Error: Running $Setup Script, Status: $Status"
+  echo $Message >> $Log
+  echo $Message >&2
+  exit 1
+fi
+
+echo "" | tee -a $Log
+
+echo "Update $NvmTools/NvmTools.rev" | tee -a $Log
+
+echo "$SvnInfo" > $NvmTools/NvmTools.rev
+
+echo "" | tee -a $Log
+echo "$Tool Done" | tee -a $Log
+

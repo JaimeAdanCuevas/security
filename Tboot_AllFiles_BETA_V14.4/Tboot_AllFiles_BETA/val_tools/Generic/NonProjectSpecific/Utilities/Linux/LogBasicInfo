@@ -1,0 +1,141 @@
+#!/bin/bash
+#****************************************************************************
+# $Id: LogBasicInfo 467 2015-09-08 18:27:48Z amr\sesmith $
+#****************************************************************************
+# INTEL CONFIDENTIAL
+# This file, software, or program is supplied under the terms of a license
+# agreement or nondisclosure agreement with INTEL Corporation and may not be
+# copied or disclosed except in accordance with the terms of that agreement.
+#****************************************************************************
+#
+# Module: Log Basic Info
+#
+#****************************************************************************
+#
+# $Id: LogBasicInfo 467 2015-09-08 18:27:48Z amr\sesmith $
+#
+
+Log=`basename ${0%.*}`.log
+
+echo "***>>> Log SUT Basic Info ${HOSTNAME}"  >> $Log
+
+echo ""  >> $Log
+echo "uname -a"  >> $Log
+uname -a  >> $Log
+
+echo "" >> $Log
+echo "df" >> $Log
+df >> $Log
+
+echo "" >> $Log
+echo "env" >> $Log
+env | sort >> $Log
+
+echo "" >> $Log
+
+if [ -e /ProjectInfo ]
+then
+  echo "Project Info File" >> $Log
+  echo "" >> $Log
+  ls -als /ProjectInfo  >> $Log
+
+fi
+
+InfoFile=$NvmTools/NvmTools.rev
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile .
+fi
+
+InfoFile=$NvmTools/SVOS4Update
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile .
+fi
+
+InfoFile=/etc/apt/sources.list
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile apt_sources.list
+fi
+
+InfoFile=/usr/local/python/svninfo.log
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile python_svninfo.log
+fi
+
+InfoFile=/usr/local/runner/RunnerRevision
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile .
+fi
+
+InfoFile=/usr/local/TargetSSA/CurrentRev
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile TargetSSARevision
+fi
+
+InfoFile=/usr/local/Origami/CurrentRev
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile OrigamiRevision
+fi
+
+InfoFile=/usr/local/val_tools/svninfo.log
+
+if [ -e $InfoFile ]
+then
+  echo "" >> $Log
+  echo "Get a copy of $InfoFile" >> $Log
+  cp $InfoFile val_tools_svninfo.log
+fi
+
+# Get System Type
+
+Type=None
+
+if [ -e /etc/centos-release ]
+then
+  echo "" >> $Log
+  echo "Get yum list installed log" >> $Log
+  
+  yum list installed > yum-list-installed.log  
+fi
+
+if [ -e /etc/debian_version ]
+then
+  echo "" >> $Log
+  echo "Get apt-show-versions log" >> $Log
+  
+  apt-show-versions > apt-show-versions.log  
+fi
+
+
+
+
+echo "" >> $Log
+echo "LogBasicInfo Done" >> $Log
+exit 0

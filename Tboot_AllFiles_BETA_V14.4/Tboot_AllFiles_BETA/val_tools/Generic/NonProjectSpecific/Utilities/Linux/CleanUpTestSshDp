@@ -1,0 +1,16 @@
+#!/bin/bash
+#INTEL CONFIDENTIAL
+#****************************************************************************
+# This file, software, or program is supplied under the terms of a license
+# agreement or nondisclosure agreement with INTEL Corporation and may not be
+# copied or disclosed except in accordance with the terms of that agreement.
+#****************************************************************************
+
+#
+# CleanUpTestLocal wrapper script
+#
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+${SCRIPT_DIR}/cleanup_ssh_dp.py $*
+exit $?
+

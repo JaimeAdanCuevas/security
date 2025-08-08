@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+#  Pass test
+#
+# $Id: Pass 464 2015-09-04 19:02:34Z amr\sesmith $
+
+#StatusUpdate "Test: Start Pass Test"
+
+sleep 2 
+
+echo ""
+echo "***>>> Exit with \"exit 0\""
+echo ""
+
+exit 0

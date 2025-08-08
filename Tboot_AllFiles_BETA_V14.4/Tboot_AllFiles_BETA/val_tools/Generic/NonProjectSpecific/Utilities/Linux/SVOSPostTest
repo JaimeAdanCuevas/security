@@ -1,0 +1,5 @@
+python /runner/bin/scripts/get-systemconfig.py -clients
+python /runner/bin/scripts/get-systemconfig.py -drives
+python /runner/bin/scripts/check-oserrors.py
+python /runner/bin/scripts/check-systemconfig.py
+Pass some SystemError Check Post-test

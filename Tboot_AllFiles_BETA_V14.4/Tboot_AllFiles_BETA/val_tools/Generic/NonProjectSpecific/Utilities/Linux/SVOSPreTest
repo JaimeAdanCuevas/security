@@ -1,0 +1,7 @@
+umountsv
+mountsv
+python /runner/bin/scripts/check-systemconfig.py
+python /runner/bin/scripts/get-systemconfig.py -clients
+python /runner/bin/scripts/get-systemconfig.py -drives
+python /runner/bin/scripts/clear-oserrors.py
+LogBasicInfo

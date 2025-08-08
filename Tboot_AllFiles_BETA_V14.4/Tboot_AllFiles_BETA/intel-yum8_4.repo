@@ -1,0 +1,20 @@
+[rhel8]
+name=Red Hat Enterprise Linux 8 BaseOS
+baseurl=http://linux-ftp.jf.intel.com/pub/ISO/redhat/redhat-rhel/RHEL-8.4.0-GA/BaseOS/x86_64/os/
+enabled=1
+gpgcheck=0
+[rhel8_optional]
+name=Red Hat Enterprise Linux rhel8_optional
+baseurl=http://linux-ftp.jf.intel.com/pub/ISO/redhat/redhat-rhel/RHEL-8.4.0-GA/CRB/x86_64/os/
+enabled=1
+gpgcheck=0
+[rhel8_appstream]
+name=Red Hat Enterprise Linux AppStream
+baseurl=http://linux-ftp.jf.intel.com/pub/ISO/redhat/redhat-rhel/RHEL-8.4.0-GA/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+[epel]
+name=Epel
+baseurl=http://mirror.23media.de/epel/8Server/x86_64/
+enabled=0 
+gpgcheck=0

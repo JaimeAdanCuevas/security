@@ -1,0 +1,26 @@
+#!/bin/bash
+#****************************************************************************
+# $Id: ReBootSUT 458 2015-09-04 18:21:26Z amr\dbraford $
+#****************************************************************************
+# INTEL CONFIDENTIAL
+# This file, software, or program is supplied under the terms of a license
+# agreement or nondisclosure agreement with INTEL Corporation and may not be
+# copied or disclosed except in accordance with the terms of that agreement.
+#****************************************************************************
+#
+# Module:ReBootSUT 
+#
+#****************************************************************************
+
+StatusUpdate "ReBootSUT: Rebooting Platform"
+
+/bin/sync
+/bin/sync
+/bin/sleep 5
+
+if [ "$OsType" = Solaris ]
+then
+  /usr/sbin/shutdown -y -i 6 -g 10 &
+else
+  /sbin/reboot
+fi

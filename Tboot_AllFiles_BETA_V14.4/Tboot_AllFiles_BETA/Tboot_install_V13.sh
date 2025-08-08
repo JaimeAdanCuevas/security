@@ -9,7 +9,12 @@
 #If you have any errors or question about this file, please contact
 #Jose Lucero Hernandez.
 
-
+# Intel proxy configuration
+export http_proxy="http://proxy-dmz.intel.com:912"
+export https_proxy="http://proxy-dmz.intel.com:912"
+export ftp_proxy="http://proxy-dmz.intel.com:911"
+export socks_proxy="http://proxy-us.intel.com:1080"
+export no_proxy="intel.com,.intel.com,localhost,127.0.0.1"
 
 echo -n "Select your OS --> 1.Centos, 2.RHEL, 3.SLES: "
 read VAR

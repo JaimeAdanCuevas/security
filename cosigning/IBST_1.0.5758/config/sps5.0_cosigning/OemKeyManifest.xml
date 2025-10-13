@@ -1,0 +1,220 @@
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018-2021 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+
+<ibst>
+   <!-- "settings" node is not part of the binary -->
+   <settings>
+      <asymmetric_key name="key" value="oemkm_private_key.pem" /> <!-- public part of the key is derived from the private key -->
+      <string name="sha_type" value="256"/>
+      <asymmetric_key name="fd0v_key" value="fd0v_key.pem" required="false" />
+      <string name="name" value="OEMP" />
+      <string name="manifest_name_suffix" value=".man" />
+      <number name="length" value="0x0" />
+      <number name="oem_id" value="0x0000" />
+      <number name="key_manifest_type" value="2" />
+      <number name="key_manifest_id" value="0x1" />
+      <number name="instance_id" value="0x1" />
+      <number name="partition_flags" value="0x00000000" />
+      <number name="partition_version" value="0x10000000" />
+      <number name="vendor_id" value="0x8086" />
+      <number name="version_control_number" value="0" />
+      <number name="svn" value="0" />
+      <version name="version" value="0.0.0.0" />
+      <number name="offline_signing" value="0" />
+      <file name="signature_file" value="" required="false" />
+      <string name="save_hash_path" value="" />
+      <number name="salt" value="32" />
+      <string name="padding_scheme" value="PSS" />  
+
+      <node name="key_manifest_extension_entries">
+         <key_manifest_entry name="entry_fd0v">
+            <bit_field name="key_manifest_usage" size="16" set_bits="57" /> <!-- '57' - usage for flash descriptor verification, user can set many usage bits, eg.: set_bits="2 | 3 | 32 | 43" -->
+            <number name="reserved" size="16" value="0" />
+            <bit_field name="flags" size="1" >
+               <bit name="ipi_policy" bit_low="0" bit_high="0" value="0" />
+               <bit name="reserved" bit_low="1" bit_high="7" value="0" />
+            </bit_field>
+            <number name="hash_algorithm" size="1" value="2" />
+            <number name="hash_size" size="2" value="32" />
+            <byte_array name="hash" calculate="/settings/fd0v_key.hashed_key"/>
+         </key_manifest_entry>
+      </node>
+      
+      <bit_field name="package_usage" set_bits="45" />
+      <number name="pdt_enabled" value="1" />
+      <number name="pv_state" value="0"/>
+      <number name="debug" value="0"/>
+      <number name="package_info_extension_enabled" value="1" />
+      <number name="partition_info_extension_enabled" value="0" />
+      <number name="ifwi_partition_extension_enabled" value="1" />
+
+      <date name="date" />
+      <!-- If empty, default signing utility is used -->
+      <string name="signing_utility" value=""/>
+      <string name="signing_utility_timeout" value="60"/> <!-- set value to empty string ("") to disable timeouts -->
+
+   </settings>
+
+   <!-- "layout" node describes structure of the binary -->
+   <layout>
+      <pdt enabled="/settings/pdt_enabled.value != 0" >
+         <pdt_header>
+            <string name="header_marker" size="4" value="$CPD" />
+            <number name="number_of_entries" size="4" calculate="parent/parent/entries.size / parent/parent/entries/pdt_entry.size" />
+            <number name="header_version" size="1" value="1" />
+            <number name="entry_version" size="1" value="1" />
+            <number name="header_length" size="1" calculate="parent.size" />
+            <function_checksum name="header_checksum">
+               <input>
+                  <data start="parent.offset" end="this.offset" />
+                  <data path="parent/partition_name" />
+                  <data path="parent/parent/entries" />
+               </input>
+            </function_checksum>
+            <string name="partition_name" size="4" calculate="/settings/name.value" />
+         </pdt_header>
+         <entries>
+            <pdt_entry>
+               <string name="entry_name" size="12" calculate="/settings/name.value + /settings/manifest_name_suffix.value" />
+               <number name="offset" size="4" calculate="parent/parent/parent/parent/manifest.offset - parent/parent/parent/parent.offset" />
+               <number name="length" size="4" calculate="parent/parent/parent/parent/manifest.size" />
+               <number name="reserved" size="4" value="0" />
+            </pdt_entry>
+         </entries>
+      </pdt>
+      
+      <function_hash name="partition_hash" legacy="true" calc_only="true" enabled="/settings/partition_info_extension_enabled.value != 0 or /settings/ifwi_partition_extension_enabled.value != 0">
+         <sha calculate="/settings/sha_type.value" />
+         <input>
+            <data path="/layout/pdt" />
+         </input>
+      </function_hash>
+      <function_update_value name="update_partition_hash" enabled="/settings/partition_info_extension_enabled.value != 0">
+         <node calculate="/layout/manifest/partition_info_extension/partition_info_header/partition_hash" />
+         <new_value calculate="parent/partition_hash.value" />
+      </function_update_value>
+      <function_update_value name="update_partition_hash" enabled="/settings/ifwi_partition_extension_enabled.value != 0">
+         <node calculate="/layout/manifest/ifwi_partition_extension/partition_hash" />
+         <new_value calculate="parent/partition_hash.value" />
+      </function_update_value>
+
+      <manifest>
+         <manifest_header_e>
+            <number name="header_type" size="4" value="4" />
+            <number name="header_length" size="4" calculate="parent.size / 4" />
+            <number name="header_version" size="4" calculate="parent/signature.header_version"/>
+            <bit_field name="flags" size="4">
+               <bit name="pv_state" bit_low="0" bit_high="0" calculate="/settings/pv_state.value" />
+               <bit name="reserved" bit_low="1" bit_high="30" value="0" />
+               <bit name="flags_debug" bit_low="31" bit_high="31" calculate="/settings/debug.value"/>
+            </bit_field>
+            <number name="vendor" size="4" calculate="/settings/vendor_id.value" />
+            <byte_array name="date" size="4" calculate="/settings/date.bcd" />
+            <number name="size" size="4" calculate="parent/parent.size / 4" />
+            <string name="header_id" size="4" value="$MN2" />
+            <number name="reserved" size="4" value="0" />
+            <number name="version" size="8" calculate="/settings/version.value" />
+            <number name="svn" size="4" calculate="/settings/svn.value" />
+            <number name="reserved" size="72" value="0" />
+            <rsa_signing enabled="/settings/key.type_rsa">
+                <number name="modulus_size" size="4" calculate="parent/modulus.size / 4" />
+                <number name="exponent_size" size="4" calculate="parent/exponent.size / 4" />
+                <byte_array name="modulus" calculate="/settings/key.modulus" /> <!-- "size" attribute is taken from calculate (size of the result) -->
+                <byte_array name="exponent" calculate="/settings/key.exponent" />
+            </rsa_signing>
+            <ec_signing enabled="/settings/key.type_rsa == false">
+                <number name="coordinate_size" size="4" calculate="/settings/key.coordinate_size / 4"/>
+                <number name="reserved" size="4" value="0"/>
+                <byte_array name="qx" calculate="/settings/key.qx" />
+                <byte_array name="qy" calculate="/settings/key.qy" />
+            </ec_signing>
+            <function_sign name="signature" legacy="true" >
+               <signing_utility calculate="/settings/signing_utility"/>
+               <signing_utility_timeout calculate="/settings/signing_utility_timeout.value"/>
+               <key value="/settings/key" />
+               <sha calculate="/settings/sha_type.value" />
+               <padding_scheme value="/settings/key.signature_size == 256 ? 'v1_5' : 'PSS'" salt_len="/settings/salt.value"/>
+               <input>
+                  <data start="parent.offset" end="/settings/key.type_rsa ? parent/rsa_signing/modulus.offset : parent/ec_signing/qx.offset" />
+                  <data path="parent/parent/package_info_extension" />
+                  <data path="parent/parent/partition_info_extension" />
+                  <data path="parent/parent/ifwi_partition_extension" />
+                  <data path="parent/parent/key_manifest_extension" />
+               </input>
+               <save_hash calculate="/settings/save_hash_path.size > 0" />
+               <save_hash_path calculate="/settings/save_hash_path.value" />
+               <load_external_data calculate="/settings/signature_file.size > 0" />
+               <external_data calculate="/settings/signature_file.data" />
+               <offline_signing calculate="/settings/offline_signing.value" />
+            </function_sign>
+         </manifest_header_e>
+         <package_info_extension enabled="/settings/package_info_extension_enabled.value != 0">
+            <package_info_header>
+               <number name="extension_type" size="4" value="15" />
+               <number name="extension_length" size="4" calculate="parent/parent.size" />
+               <string name="package_name" size="4" calculate="/settings/name.value" />
+               <number name="version_control_number" size="4" calculate="/settings/version_control_number.value" />
+               <byte_array name="usage" size="16" calculate="/settings/package_usage.value" />
+               <number name="svn" size="4" calculate="/settings/svn.value" />
+               <number name="reserved" size="16" value="0" />
+            </package_info_header>
+            <package_info_entries />
+         </package_info_extension>
+         <partition_info_extension enabled="/settings/partition_info_extension_enabled.value != 0">
+            <partition_info_header>
+               <number name="extension_type" size="4" value="3" />
+               <number name="extension_length" size="4" calculate="parent/parent.size" />
+               <string name="partition_name" size="4" calculate="/settings/name.value" />
+               <number name="partition_length" size="4" calculate="/layout.size" />
+               <byte_array name="partition_hash" value="0" size="/layout/partition_hash.size" />
+               <number name="version_control_number" size="4" calculate="/settings/version_control_number.value" />
+               <number name="partition_version" size="4" calculate="/settings/partition_version.value" />
+               <number name="data_format_version" size="4" value="0" />
+               <number name="instance_id" size="4" calculate="/settings/instance_id.value" />
+               <number name="flags" size="4" calculate="/settings/partition_flags.value" />
+               <byte_array name="reserved" size="20" value="FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" />
+            </partition_info_header>
+            <partition_info_entries />
+         </partition_info_extension>
+         <ifwi_partition_extension enabled="/settings/ifwi_partition_extension_enabled.value != 0">
+            <number name="extension_type" size="4" value="0x16" />
+            <number name="extension_length" size="4" calculate="parent.size" />
+            <string name="partition_name" size="4" calculate="/settings/name.value" />
+            <number name="partition_length" size="4" calculate="/layout.size" />
+            <number name="partition_version" size="4" calculate="/settings/partition_version.value" />
+            <number name="data_format_version" size="4" value="0" />
+            <number name="instance_id" size="4" calculate="/settings/instance_id.value" />
+            <number name="flags" size="4" calculate="/settings/partition_flags.value" />
+            <number name="hash_algorithm" size="1" calculate="parent/partition_hash.size == 32 ? 2 : 3" />
+            <number name="hash_size" size="3" calculate="parent/partition_hash.size" />
+            <byte_array name="partition_hash" value="0" size="/layout/partition_hash.size" />
+            <byte_array name="reserved" size="20" value="0" />
+         </ifwi_partition_extension>
+         <key_manifest_extension>
+            <key_manifest_header>
+               <number name="extension_type" size="4" value="14" />
+               <number name="extension_length" size="4" calculate="parent/parent.size" />
+               <number name="key_manifest_type" size="4" calculate="/settings/key_manifest_type.value" />
+               <number name="key_manifest_svn" size="4" calculate="/settings/svn.value" />
+               <number name="oem_id" size="2" calculate="/settings/oem_id.value" />
+               <number name="key_manifest_id" size="1" calculate="/settings/key_manifest_id.value" />
+               <number name="reserved" size="1" value="0" />
+               <number name="reserved" size="16" value="0" />
+            </key_manifest_header>
+            <key_manifest_extension_entries />
+         </key_manifest_extension>
+      </manifest>
+
+      <byte_array name="padding" size="0" value="" align="/settings/length.value" />
+   </layout>
+</ibst>

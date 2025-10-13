@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018-2022 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+<ibst_overrides>
+    <cosign>
+        <rsa_key name="cosign_key" value="keys/3k_test_key_private.pem" />
+        <number name="salt" value="32" />
+        <number name="algorithm" value="4" />
+        <string name="padding_scheme" value="PSS" />
+        <rsa_key name="rbe_key" value="" />
+        <rsa_key name="ftpr_key" value="" />
+        <rsa_key name="opr_key" value="" />
+        <number name="me_cosign_enabled" value="1" />
+        <string name="input_file" value="MeRegion.bin" />
+        <string name="signing_utility" value=""/>
+        <string name="signing_utility_timeout" value="60"/>
+    </cosign>
+    <cosign>
+        <rsa_key name="cosign_key" value="keys/3k_test_key_private.pem" />
+        <number name="salt" value="32" />
+        <number name="algorithm" value="4" />
+        <string name="padding_scheme" value="PSS" />
+        <number name="partition_cosign_enabled" value="1" />
+        <string name="input_file" value="idlm.bin" />
+        <string name="signing_utility" value=""/>
+        <string name="signing_utility_timeout" value="60"/>
+    </cosign>
+    <cosign>
+        <rsa_key name="cosign_key" value="keys/3k_test_key_private.pem" />
+        <number name="salt" value="32" />
+        <number name="algorithm" value="4" />
+        <string name="padding_scheme" value="PSS" />
+        <number name="token_cosign_enabled" value="1" />
+        <string name="input_file" value="rotkeymn2.bin" />
+        <string name="signing_utility" value=""/>
+        <string name="signing_utility_timeout" value="60"/>
+    </cosign>
+</ibst_overrides>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018-2019 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+
+<ibst_overrides version="1.0"> 
+   <number name="bin_size" value="0" /> <!-- Token size with no padding (Default) -->
+   <rsa_key name="key" value="data/key.pem" /> <!-- Path to the key used for signing the token -->
+   <number name="expiration_seconds" value="0" /><!-- Time from Part ID generation to Token expiration (in seconds) -->
+   <!-- flags -->
+   <number name="single_boot" value="0" /> <!-- The flag is used ONLY for the Token Revocation on platform. Values: 0 = No limit (i.e., No Token Revocation), 1 = Single Boot (i.e., Enable Token Revocation) -->
+   <number name="global_valid" value="1" /> <!-- This flag is used to generate global or part restricted token. Values: 0 = Part restricted (specific), 1 = globally valid (No individual Part ID/Nonce/time base fields) -->
+   <number name="anti_replay_protected" value="0" /> <!-- This flag is by default '0'. This mechanism is not supported due to lack of coin cell bettery on the platform. Values: N/A -->
+   <number name="time_limited" value="0" /> <!-- This flag is by default '0'. This mechanism is not supported due to lack of coin cell bettery on the platform. Values: N/A -->
+ 
+   <node name="pids">
+      <byte_array name="from_file" calculate="/settings/pids_from_file.data" enabled="/settings/pids_from_file.empty == false" />
+      <pid enabled="parent/from_file.enabled == false">
+         <byte_array name="part_id" size="12" value="DEA0E5E46300E84020FE394B" /> <!-- Part specific ID of the platform of size 12 bytes which is retrieved from ME -->
+         <byte_array name="nonce" size="4" value="0xEEC4D74A"/> <!-- nonce (random number) of size 4 bytes which is retrieved from ME -->
+         <byte_array name="time_base" size="4" value="0x00000100" /> <!-- Time base from when PARTID was requested, it of size 4 bytes which is retrieved from ME -->
+      </pid>
+   </node>
+
+   <node name="knobs">
+      <knob>
+         <number name="knob_id" size="4" value="0x80860002" /> <!-- OEM Unlock knob' to unlock the debug capabilities to IA and IE cores -->
+         <number name="knob_data" size="4" value="1" /> <!-- Values: 0 = No OEM Unlock, 1 = OEM (aka ORANGE) Unlock -->
+      </knob>
+      <knob>
+         <number name="knob_id" size="4" value="0x80860052" /> <!-- IA Unlock knob' to unlock the debug capabilities of IA core only -->
+         <number name="knob_data" size="4" value="1" /> <!-- Values: 0 = No IA Unlock, 1 = IA (aka ORANGE) Unlock -->
+      </knob>
+      <knob>
+         <number name="knob_id" size="4" value="0x80860051" /> <!-- ABL Elements knob' to provide the debug capabilities to ABL (BootLoader) -->
+         <number name="knob_data" size="4" value="0" /> <!-- Values: Bit-0(0 = No CLI Mode, 1 = CLI Enabled), Bit-1(0 = No NPK, 1 = NPK Enabled) -->
+      </knob>
+      <knob>
+         <number name="knob_id" size="4" value="0x80860030" /> <!-- Secure Boot knob' to enable/disable the SecureBoot capabilities -->
+         <number name="knob_data" size="4" value="2" /> <!-- Values: 0 = Secure Boot enforced, 2 = Secure boot disabled -->
+      </knob>
+	</node>
+</ibst_overrides>

@@ -1,0 +1,66 @@
+C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides>ibst_sign_all_internal_new.bat
+
+C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides>echo off
+=====================IBST  Test Script ===================================
+        @@@@@@@@@@@@@@@@@  Signing  ME Region  Firmware @@@@@@@@@@@@@@@@@@@@@@@
+                ################# Signing RBE and BUP  in MERegion.bin #################
+C:\Python38/python.exe: can't open file '.\Ibst_sps5.0_1.0.846\IbstTool/ibst.py': [Errno 2] No such file or directory
+                ################# RBE and BUP Done #################
+                ################# Signing PMC Patch #################
+C:\Python38/python.exe: can't open file '.\Ibst_sps5.0_1.0.846\IbstTool/ibst.py': [Errno 2] No such file or directory
+                ################# PMCP Done #################
+                ################# Signing ME Region Key manifest #################
+C:\Python38/python.exe: can't open file '.\Ibst_sps5.0_1.0.846\IbstTool/ibst.py': [Errno 2] No such file or directory
+                ###############  ME Region Key Manifest Done ####################
+        @@@@@@@@@@@@@  ME Region Firmware Steps Done @@@@@@@@@@@@@@@@@@@@
+
+        @@@@@@@@@@@ Signing BIOS Region Images  @@@@@@@@@@@@@@@@@@@@@@
+                ################# Signing ACM #################
+Traceback (most recent call last):
+  File "./ibst.py", line 18, in <module>
+    import tool.ibstMain
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\ibstMain.py", line 21, in <module>
+    from .IbstCommandLineOptions import IbstCommandLineOptions
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\IbstCommandLineOptions.py", line 18, in <module>
+    from .utils import get_file_name_no_ext
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\utils.py", line 26, in <module>
+    from cryptography.hazmat.primitives.asymmetric import rsa
+ModuleNotFoundError: No module named 'cryptography'
+                ################# ACM Done #################
+                ################# Signing FIT Patch #################
+Traceback (most recent call last):
+  File "./ibst.py", line 18, in <module>
+    import tool.ibstMain
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\ibstMain.py", line 21, in <module>
+    from .IbstCommandLineOptions import IbstCommandLineOptions
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\IbstCommandLineOptions.py", line 18, in <module>
+    from .utils import get_file_name_no_ext
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\utils.py", line 26, in <module>
+    from cryptography.hazmat.primitives.asymmetric import rsa
+ModuleNotFoundError: No module named 'cryptography'
+                ################# FIT Patch Done #################
+        @@@@@@@@@@@@@@ BIOS Images Done  @@@@@@@@@@@@@@@@@
+                ################# Signing OS Kernel #################
+Traceback (most recent call last):
+  File "./ibst.py", line 18, in <module>
+    import tool.ibstMain
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\ibstMain.py", line 21, in <module>
+    from .IbstCommandLineOptions import IbstCommandLineOptions
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\IbstCommandLineOptions.py", line 18, in <module>
+    from .utils import get_file_name_no_ext
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\utils.py", line 26, in <module>
+    from cryptography.hazmat.primitives.asymmetric import rsa
+ModuleNotFoundError: No module named 'cryptography'
+                ################# Signing bootx64.efi #################
+Traceback (most recent call last):
+  File "./ibst.py", line 18, in <module>
+    import tool.ibstMain
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\ibstMain.py", line 21, in <module>
+    from .IbstCommandLineOptions import IbstCommandLineOptions
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\IbstCommandLineOptions.py", line 18, in <module>
+    from .utils import get_file_name_no_ext
+  File "C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides\Ibst_sps5.0_1.0.846\IbstTool\tool\utils.py", line 26, in <module>
+    from cryptography.hazmat.primitives.asymmetric import rsa
+ModuleNotFoundError: No module named 'cryptography'
+
+C:\Work\ManifestOsPackages\ibst_batch_file_keys_overrides>

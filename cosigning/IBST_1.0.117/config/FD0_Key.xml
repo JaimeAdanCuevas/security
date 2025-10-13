@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+
+<ibst>
+  <!-- "settings" node is not part of the binary -->
+  <settings>
+    <rsa_key name="key" value="data/pub.pem" /> <!-- private/ public key expected -->
+  </settings>
+
+  <!-- "layout" node describes structure of the binary -->
+  <layout>
+    <number name="version" size="1" value="0x10"/>
+    <number name="key_size" size="2" calculate="/settings/key.signature_size * 8"/>
+    <byte_array name="exponent" size="4"  calculate="/settings/key.exponent" />
+    <byte_array name="modulus" calculate="/settings/key.modulus" />
+  </layout>
+</ibst>

@@ -1,0 +1,12 @@
+SPS IBST Third Party Programs File
+
+This file contains the list of third party software (“third party programs”) contained in the Intel software. This third party software, even if included with the distribution of the Intel software, may be governed by separate license terms, including without limitation, third party license terms, other Intel software license terms, and open source software license terms. These separate license terms govern your use of the third party programs as set forth in the “third-party-programs.txt” or other similarly-named text file. 
+
+Third party software required notices and/or license terms are included in their own individual license files indicated below.
+
+-------------------------------------------------------------
+
+All licenses are marked as prerequisite.
+
+-------------------------------------------------------------
+Other names and brands may be claimed as the property of others.

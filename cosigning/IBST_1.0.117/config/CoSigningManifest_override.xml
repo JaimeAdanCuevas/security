@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018-2019 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+<ibst_overrides>
+    <cosign>
+        <string name="package_name" value="FPM" />
+        <number name="vendor_id" value="0x8086" />
+        <byte_array name="binary_hash" value="8d8e3a4cab33c9db63c208368976dc93ff036349eb30eafd8a2e35c6d1e826cc" size="32"/>
+        <number name="svn" value="2" />
+        <number name="hash_type" value="1" />
+        <string name="output_name" value="FPM.bin" />
+    </cosign>
+    <cosign>
+        <string name="package_name" value="ACMM" />
+        <number name="vendor_id" value="0x8086" />
+        <byte_array name="binary_hash" value="69bb59f75dffc2d817251d566e16b6618e885d324e6facd201b046e6112ff2a0" size="32"/>
+        <number name="svn" value="0" />
+        <number name="hash_type" value="2" />
+        <string name="output_name" value="ACMM.bin" />
+    </cosign>
+    <cosign>
+        <string name="package_name" value="NWLM" />
+        <byte_array name="binary_hash" value="3324f4c00074f831be9e8e8fd05c8e9506f2cef6d351478c4aff8e4eedd3e2be" size="32"/>
+        <number name="svn" value="0" />
+        <number name="hash_type" value="3" />
+        <string name="output_name" value="NWLM.bin" />
+    </cosign>
+    <cosign>
+        <string name="package_name" value="OSLM" />
+        <byte_array name="binary_hash" value="be2817c814e8068e18785d18ead91c4a19e3a8eb2b58547eb30b418f92863144" size="32"/>
+        <number name="svn" value="0" />
+        <number name="hash_type" value="4" />
+        <string name="output_name" value="OSLM.bin" />
+    </cosign>
+</ibst_overrides>

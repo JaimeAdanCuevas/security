@@ -1,0 +1,1212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INTEL CONFIDENTIAL
+Copyright 2017-2019 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:sch="http://purl.oclc.org/dsdl/schematron">
+
+  <!--  MAIN TREE -->
+  <xs:element name="ibst">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="settings">
+          <xs:complexType>
+            <xs:sequence  minOccurs="0" maxOccurs="unbounded">
+              <xs:choice>
+                <xs:element name="number"   type="number"/>
+                <xs:element name="byte_array"   type="byte_array"/>
+                <xs:element name="string"   type="string"/>
+                <xs:element name="rsa_key"  type="rsa_key"/>
+                <xs:element name="aes_key"  type="aes_key"/>
+                <xs:element name="elf_file" type="elf_file"/>
+                <xs:element name="file"     type="file"/>
+                <xs:element name="offline_encryption" type="offline_encryption"/>
+                <xs:element name="date"     type="setting"/>
+                <xs:element name="node"     type="node"/>
+                <xs:element name="version"  type="version"/>
+                <xs:element name="bit_field"  type="bit_field"/>
+              </xs:choice>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="layout">
+          <xs:complexType>
+            <xs:sequence>
+              <!-- Layout entry: rom_bypass -->
+              <xs:element name ="rom_bypass" minOccurs="0">
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="number" type="number" minOccurs="0"/>
+                    <xs:element name="byte_array" type="byte_array"/>
+                  </xs:all>
+                </xs:complexType>
+              </xs:element>
+              <!-- Layout entry: FPTs -->
+              <xs:element name="fpt"  type="fpt" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:choice>
+                  <xs:element ref="partition"/>
+                  <xs:element ref="byte_array"/>
+                  <xs:element ref="number"/>
+                  <xs:element ref="pdt"/>
+                  <xs:element ref="manifest"/>
+                  <xs:element ref="metadata"/>
+                  <xs:element ref="function_hash"/>
+                  <xs:element ref="function_verify"/>
+                  <xs:element ref="me_binary"/>
+                  <xs:element ref="me_partition"/>
+                  <xs:element ref="token"/>                  
+                </xs:choice>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="decomposition" minOccurs="0">
+            <xs:complexType>
+                <xs:sequence>
+                    <xs:any processContents="lax" maxOccurs="unbounded" namespace="##local"/>
+                </xs:sequence>
+                <xs:attributeGroup ref="decomposition" />
+            </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Pre-defined elements-->
+  <xs:element name="partition" type="partition"/>
+  <xs:element name="pdt" type="pdt"/>
+  <xs:element name="string" type="string"/>
+  <xs:element name="number" type="number"/>
+  <xs:element name="byte_array" type="byte_array"/>
+  <xs:element name="file" type="file"/>
+  <xs:element name="bit" type="bit"/>
+  <xs:element name="bit_field" type="bit_field"/>
+  <xs:element name="function_sign" type="function_sign"/>
+  <xs:element name="function_checksum" type="function_checksum"/>
+  <xs:element name="function_hash" type="function_hash"/>
+  <xs:element name="image_hash" type="image_hash"/>
+  <xs:element name="function_verify" type="function_verify"/>
+  <xs:element name="manifest" type="manifest"/>
+  <xs:element name="metadata" type="metadata"/>
+  <xs:element name="me_binary" type="me_binary"/>
+  <xs:element name="me_partition" type="me_partition"/>
+  <xs:element name="token" type="token"/>
+  <xs:element name="cosign_footer" type="cosign_footer" />
+  <xs:element name="pts_footer" type="pts_footer" />
+  <xs:element name="crypto_block" type="crypto_block" />
+  <xs:element name="manifest_cs" type="manifest_cs" />
+  <xs:element name="footer_cs" type="footer_cs" />
+  <xs:element name="modules_cs" type="modules_cs" />
+  <xs:element name="pdt_header_cs" type="pdt_header_cs" />
+  <xs:element name="pdt_entries_cs" type="pdt_entries_cs" />
+  <xs:element name="pts_debug" type="pts_debug" />
+  <xs:element name="table" type="table" />
+  <!-- TYPES -->
+
+  <!-- Settings types-->
+
+  <xs:attributeGroup name="setting">
+    <xs:attribute name="value" type="xs:string" />
+    <xs:attribute name="name"  type="xs:string" use="required" />
+  </xs:attributeGroup>
+
+  <xs:complexType name="setting">
+    <xs:attributeGroup ref="setting" />
+  </xs:complexType>
+
+  <xs:complexType name="entry">
+    <xs:attribute name="value" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="elf_file">
+    <xs:sequence>
+      <xs:element name="module_entry" minOccurs="1" maxOccurs="1" type="entry"/>
+      <xs:element name="objcopy_args" minOccurs="0" maxOccurs="1" type="entry" />
+      <xs:element name="objcopy_path" minOccurs="0" maxOccurs="1" type="entry" />
+      <xs:element name="objdump_args" minOccurs="0" maxOccurs="1" type="entry" />
+      <xs:element name="objdump_path" minOccurs="0" maxOccurs="1" type="entry" />
+      <xs:element name="markers" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:element name="image_text_start" type="string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="image_text_end"   type="string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="image_ram_start"  type="string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="image_ram_end"    type="string" minOccurs="1" maxOccurs="1"/>
+          </xs:sequence>         
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="setting" />
+  </xs:complexType>
+
+  <xs:complexType name="file">
+    <xs:sequence>
+      <xs:element name="offset" minOccurs="0" maxOccurs="1" type="entry"/>
+      <xs:element name="end" minOccurs="0" maxOccurs="1" type="entry"/>
+      <xs:element name="decompose" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="data" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:attribute name="name"  type="xs:string"/>
+                <xs:attribute name="start" type="xs:string"/>
+                <xs:attribute name="end"   type="xs:string"/>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="setting" />
+    <xs:attribute name="required"  type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:complexType name="rsa_key">
+    <xs:attributeGroup ref="setting" />
+    <xs:attribute name="hash_type" type="xs:string" use="optional" />
+    <xs:attribute name="required"  type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:complexType name="aes_key">
+    <xs:attributeGroup ref="setting" />
+    <xs:attribute name="enabled"  type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="offline_encryption">
+    <xs:sequence>
+      <xs:element name="number"/>
+      <xs:element name="number" />
+      <xs:element name="string" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="node">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+    </xs:sequence>
+    <xs:attributeGroup ref="setting" />
+  </xs:complexType>
+
+  <!-- Layout pre-defined types-->
+
+  <xs:attributeGroup name="layout">
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="align" type="xs:string"/>
+    <xs:attribute name="offset" type="xs:string"/>
+    <xs:attribute name="enabled"  type="xs:string" />
+    <xs:attribute name="calc_only"  type="xs:string" />
+    <xs:attribute name="validate"  type="xs:string" />
+  </xs:attributeGroup>
+  
+  <xs:attributeGroup name="decomposition">
+    <xs:attribute name="file" type="xs:string"/>
+  </xs:attributeGroup>
+  
+  <xs:attributeGroup name="table">
+    <xs:attribute name="name" type="xs:string"/> 
+    <xs:attribute name="count" type="xs:string"/>
+    <xs:attribute name="sort" type="xs:string"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name ="string">
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="number">
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="version">
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="byte_array">
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="bit">
+    <xs:attribute name="name"     type="xs:string"/>
+    <xs:attribute name="bit_low"  type="xs:unsignedInt"/>
+    <xs:attribute name="bit_high" type="xs:unsignedInt"/>
+    <xs:attribute name="value"    type="xs:string"/>
+    <xs:attribute name="calculate"    type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name ="bit_field">
+    <xs:sequence>
+      <xs:element ref="bit" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+    <xs:attribute name="set_bits" type="xs:string" use="optional" />
+  </xs:complexType>
+
+  <!-- Schematron rules are wrapped into annotation to use few validators on single schema file (XSDSchema, Schematron) -->
+  <xs:annotation>
+    <xs:appinfo>
+      <sch:pattern id="entry_required_attrs" abstract="true">
+        <sch:rule context="$element">
+          <sch:report test="@value and @calculate" >
+            <sch:name/>: one of "value", "calculate" is allowed at once!
+          </sch:report>
+        </sch:rule>
+      </sch:pattern>
+
+      <sch:pattern id="string_required_attrs" is-a="entry_required_attrs">
+        <sch:param name="element" value="string"/>
+      </sch:pattern>
+
+      <sch:pattern id="number_required_attrs" is-a="entry_required_attrs">
+        <sch:param name="element" value="number"/>
+      </sch:pattern>
+
+      <sch:pattern id="byte_array_required_attrs" is-a="entry_required_attrs">
+        <sch:param name="element" value="byte_array"/>
+      </sch:pattern>
+
+      <sch:pattern id="bit_required_attrs" is-a="entry_required_attrs">
+        <sch:param name="element" value="bit"/>
+      </sch:pattern>
+
+      <sch:pattern id="bit_rule" >
+        <sch:rule context="bit">
+          <sch:report test="@bit_low > @bit_high" >
+            <sch:name/>: bit_low cannot be greater than bit_high
+          </sch:report>
+        </sch:rule>
+      </sch:pattern>
+
+    </xs:appinfo>
+  </xs:annotation>
+
+  <xs:attributeGroup name="entry_attributes">
+    <xs:attribute name="name"      type="xs:string"/>
+    <xs:attribute name="size"      type="xs:string"   />
+    <xs:attribute name="value"     type="xs:string"/>
+    <xs:attribute name="calculate" type="xs:string"/>
+    <xs:attribute name="align"     type="xs:string"/>
+    <xs:attribute name="order"     type="order"/>
+    <xs:attribute name="enabled"   type="xs:string"/>
+    <xs:attribute name="calc_only"  type="xs:string" />
+    <xs:attribute name="encrypt"   type="xs:string"/>
+    <xs:attribute name="encryption_mode" type="encryption_mode"/>
+    <xs:attribute name="offline_encryption_settings" type="xs:string"/>
+    <xs:attribute name="iv" type="xs:string"/>
+    <xs:attribute name="offset_aligned" type="xs:string" />
+    <xs:attribute name="offset" type="xs:string" />
+    <xs:attribute name="padding" type="xs:string" />
+    <xs:attribute name="align_module" type="xs:string" />
+    <xs:attribute name="decrypted" type="xs:string" />
+    <xs:attribute name="save_file_path"  type="xs:string" />
+    <xs:attribute name="validate"  type="xs:string" />
+  </xs:attributeGroup>
+
+  <!-- FPT AND PARTITION -->
+  <xs:complexType name ="fpt">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern id="fpt_fixed">
+          <sch:rule context="fpt_header">
+            <sch:assert test="string[1][@name='header_markup']">In fpt_header missing header_markup!</sch:assert>
+            <sch:assert test="number[1][@name='number_of_entries']">In fpt_header missing number_of_entries!</sch:assert>
+            <sch:assert test="number[2][@name='header_version']">In fpt_header missing header_version!</sch:assert>
+            <sch:assert test="number[3][@name='entry_version']">In fpt_header missing entry_version!</sch:assert>
+            <sch:assert test="number[4][@name='header_length']">In fpt_header missing header_length!</sch:assert>
+            <sch:assert test="function_checksum[1][@name='header_checksum']">In fpt_header missing header_checksum!</sch:assert>
+            <sch:assert test="byte_array[1][@name='reserved']">In fpt_header missing reserved!</sch:assert>
+          </sch:rule>
+          <sch:rule context="fpt_entry">
+            <sch:assert test="string[1][@name='partition_name']">In fpt_header missing partition_name!</sch:assert>
+            <sch:assert test="number[1][@name='reserved']">In fpt_header missing reserved!</sch:assert>
+            <sch:assert test="number[2][@name='offset']">In fpt_header missing offset!</sch:assert>
+            <sch:assert test="number[3][@name='length']">In fpt_header missing length!</sch:assert>
+            <sch:assert test="number[4][@name='reserved']">In fpt_header missing reserved!</sch:assert>
+            <sch:assert test="number[5][@name='partition_flags']">In fpt_header missing partition_flags!</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="fpt_header">
+        <xs:complexType>
+          <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:element ref="string"/>
+            <xs:element ref="number"/>
+            <xs:element ref="number"/>
+            <xs:element ref="number"/>
+            <xs:element ref="number"/>
+            <xs:element ref="function_checksum"/>
+            <xs:element ref="byte_array"/>
+          </xs:sequence>
+          <xs:attributeGroup ref="layout" />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="entries">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="fpt_entry" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                  <xs:element ref="string"/>
+                  <xs:element ref="number" minOccurs="5" maxOccurs="5"/>
+                </xs:sequence>
+                <xs:attributeGroup ref="layout" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attributeGroup ref="layout" />
+        </xs:complexType>
+      </xs:element>
+    </xs:all>
+    <xs:attributeGroup ref="layout" />
+  </xs:complexType>
+
+  <xs:complexType name="partition">
+    <xs:sequence>
+      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded" namespace="##local"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name="pdt">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern id="pdt_fixed">
+          <sch:rule context="pdt_header">
+            <sch:assert test="string[1][@name='header_marker']">In pdt_header missing header_marker!</sch:assert>
+            <sch:assert test="number[1][@name='number_of_entries']">In pdt_header missing number_of_entries!</sch:assert>
+            <sch:assert test="number[2][@name='header_version']">In pdt_header missing header_version!</sch:assert>
+            <sch:assert test="number[3][@name='entry_version']">In pdt_header missing entry_version!</sch:assert>
+            <sch:assert test="number[4][@name='header_length']">In pdt_header missing header_length!</sch:assert>
+            <sch:assert test="number[5][@name='reserved'] or function_checksum[1][@name='header_checksum']">In pdt_header missing reserved or header_checksum!</sch:assert>
+            <sch:assert test="string[2][@name='partition_name']">In pdt_header missing partition_name!</sch:assert>
+          </sch:rule>
+          <sch:rule context="pdt_entry">
+            <sch:assert test="string[1][@name='entry_name']">In pdt_entry missing partition_name!</sch:assert>
+            <sch:assert test="number[1][@name='offset']">In pdt_entry missing offset!</sch:assert>
+            <sch:assert test="number[2][@name='length']">In pdt_entry missing length!</sch:assert>
+            <sch:assert test="number[3][@name='reserved']">In pdt_entry missing reserved!</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="pdt_header">
+        <xs:complexType>
+          <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:element ref="string"/>
+            <xs:element ref="number" minOccurs="4" maxOccurs="5"/>
+            <xs:element ref="function_checksum" minOccurs="0" maxOccurs="1"/>
+            <xs:element ref="string"/>
+          </xs:sequence>
+          <xs:attributeGroup ref="layout" />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="entries">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="pdt_entry" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                  <xs:element ref="string"/>
+                  <xs:element ref="number" minOccurs="3" maxOccurs="3"/>
+                </xs:sequence>
+                <xs:attributeGroup ref="layout" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attributeGroup ref="layout" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="layout" />
+  </xs:complexType>
+
+  <!-- MANIFEST DEFINITION-->
+  <xs:complexType name="manifest">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern id="manifest_fixed">
+          <sch:rule context="manifest_header">
+            <sch:assert test="number[1][@name='header_type']">In manifest_header missing header_type!</sch:assert>
+            <sch:assert test="number[2][@name='header_length']">In manifest_header missing header_length!</sch:assert>
+            <sch:assert test="number[3][@name='header_version']">In manifest_header missing header_version!</sch:assert>
+            <sch:assert test="bit_field[1][@name='flags']">In manifest_header missing flags!</sch:assert>
+            <sch:assert test="number[4][@name='vendor']">In manifest_header missing vendor!</sch:assert>
+            <sch:assert test="byte_array[1][@name='date']">In manifest_header missing date!</sch:assert>
+            <sch:assert test="number[5][@name='size']">In manifest_header missing size!</sch:assert>
+            <sch:assert test="string[1][@name='header_id']">In manifest_header missing header_id!</sch:assert>
+            <sch:assert test="number[6][@name='reserved']">In manifest_header missing reserved[1]!</sch:assert>
+            <sch:assert test="number[7][@name='version']">In manifest_header missing version!</sch:assert>
+            <sch:assert test="number[8][@name='svn']">In manifest_header expected 'svn'!</sch:assert>
+            <sch:assert test="number[9][@name='reserved']">In manifest_header child[12] expected 'reserved'[2]!</sch:assert>
+            <sch:assert test="number[10][@name='modulus_size']">In manifest_header child[13] expected 'modulus_size'!</sch:assert>
+            <sch:assert test="number[11][@name='exponent_size']">In manifest_header child[14] expected 'exponent_size'!</sch:assert>
+            <sch:assert test="byte_array[2][@name='modulus']">In manifest_header missing modulus!</sch:assert>
+            <sch:assert test="byte_array[3][@name='exponent']">In manifest_header missing exponent!</sch:assert>
+            <sch:assert test="count(function_sign)=1 or function_sign[1][@enabled]">In manifest_header missing signature!</sch:assert>
+            <sch:assert test="count(function_sign)=1 or function_sign[2][@enabled]">In manifest_header improper additional signature!</sch:assert>
+          </sch:rule>
+          <sch:rule context="partition_info_header">
+            <sch:assert test="number[1][@name='extension_type']">In partition_info_header missing extension_type!</sch:assert>
+            <sch:assert test="number[2][@name='extension_length']">In partition_info_header missing extension_length!</sch:assert>
+            <sch:assert test="string[1][@name='partition_name']">In partition_info_header missing partition_name!</sch:assert>
+            <sch:assert test="number[3][@name='partition_length']">In partition_info_header missing extension_length!</sch:assert>
+            <sch:assert test="byte_array[1][@name='partition_hash'] or function_hash[1][@name='partition_hash']">In partition_info_header missing partition_hash!</sch:assert>
+            <sch:assert test="number[4][@name='version_control_number']">In partition_info_header missing version_control_number!</sch:assert>
+            <sch:assert test="number[5][@name='partition_version']">In partition_info_header missing partition_version!</sch:assert>
+            <sch:assert test="number[6][@name='data_format_version']">In partition_info_header missing data_format_version!</sch:assert>
+            <sch:assert test="number[7][@name='instance_id']">In partition_info_header missing instance_id!</sch:assert>
+            <sch:assert test="number[8][@name='flags']">In partition_info_header missing flags!</sch:assert>
+            <sch:assert test="byte_array[2][@name='reserved'] or byte_array[1][@name='reserved'] and count(byte_array)=1">In partition_info_header missing reserved!</sch:assert>
+          </sch:rule>
+          <sch:rule context="module">
+            <sch:assert test="string[1][@name='name']">In module missing name!</sch:assert>
+            <sch:assert test="number[1][@name='type']">In module missing type!</sch:assert>
+            <sch:assert test="number[2][@name='metadata_size']">In module missing metadata_size!</sch:assert>
+            <sch:assert test="function_hash[1][@name='metadata_hash']">In module missing metadata_hash!</sch:assert>
+          </sch:rule>
+          <sch:rule context="key_manifest_header">
+            <sch:assert test="number[1][@name='extension_type']">In key_manifest_header missing extension_type!</sch:assert>
+            <sch:assert test="number[2][@name='extension_length']">In key_manifest_header missing extension_length!</sch:assert>
+            <sch:assert test="number[3][@name='key_manifest_type']">In key_manifest_header missing key_manifest_type!</sch:assert>
+            <sch:assert test="number[4][@name='key_manifest_svn']">In key_manifest_header missing key_manifest_svn!</sch:assert>
+            <sch:assert test="number[5][@name='oem_id']">In key_manifest_header missing oem_id!</sch:assert>
+            <sch:assert test="number[6][@name='key_manifest_id']">In key_manifest_header missing key_manifest_id!</sch:assert>
+            <sch:assert test="number[7][@name='reserved']">In key_manifest_header missing reserved!</sch:assert>
+            <sch:assert test="number[8][@name='reserved']">In key_manifest_header missing reserved!</sch:assert>
+          </sch:rule>
+          <sch:rule context="key_data">
+            <sch:assert test="byte_array[1][@name='usage']">In key_data missing usage!</sch:assert>
+            <sch:assert test="number[1][@name='reserved']">In key_data missing reserved!</sch:assert>
+            <sch:assert test="number[2][@name='reserved']">In key_data missing reserved!</sch:assert>
+            <sch:assert test="number[3][@name='hash_algorithm']">In key_data missing hash_algorithm!</sch:assert>
+            <sch:assert test="number[4][@name='hash_size']">In key_data missing hash_size!</sch:assert>
+            <sch:assert test="byte_array[2][@name='hash']">In key_data missing hash!</sch:assert>
+          </sch:rule>
+          <sch:rule context="token_extension_header">
+            <sch:assert test="number[1][@name='extension_type']">In token_extension_header missing extension_type!</sch:assert>
+            <sch:assert test="number[2][@name='extension_length']">In token_extension_header missing extension_length!</sch:assert>
+            <sch:assert test="number[3][@name='version']">In token_extension_header missing version!</sch:assert>
+            <sch:assert test="number[4][@name='payload_version']">In token_extension_header missing payload_version!</sch:assert>
+            <sch:assert test="number[5][@name='number_ids']">In token_extension_header missing number_ids!</sch:assert>
+            <sch:assert test="number[6][@name='token_id']">In token_extension_header missing token_id!</sch:assert>
+            <sch:assert test="bit_field[1][@name='flags']">In token_extension_header missing flags!</sch:assert>
+            <sch:assert test="number[7][@name='expiration_seconds']">In token_extension_header missing expiration_seconds!</sch:assert>
+            <sch:assert test="number[8][@name='manufacturing_lot']">In token_extension_header missing manufacturing_lot!</sch:assert>
+            <sch:assert test="byte_array[1][@name='reserved']">In token_extension_header missing reserved!</sch:assert>
+
+            <sch:assert test="bit_field/bit[1][@name='single_boot']">In token_extension_header/bit_field('flags') missing single_boot!</sch:assert>
+            <sch:assert test="bit_field/bit[2][@name='global_valid']">In  token_extension_header/bit_field('flags') missing global_valid!</sch:assert>
+            <sch:assert test="bit_field/bit[3][@name='anti_replay_protected']">In  token_extension_header/bit_field('flags') missing anti_replay_protected!</sch:assert>
+            <sch:assert test="bit_field/bit[4][@name='time_limited']">In  token_extension_header/bit_field('flags') missing time_limited!</sch:assert>
+            <sch:assert test="bit_field/bit[5][@name='manufacturing_lot_restricted']">In  token_extension_header/bit_field('flags') missing manufacturing_lot_restricted!</sch:assert>
+            <sch:assert test="bit_field/bit[6][@name='reserved']">In  token_extension_header/bit_field('flags') missing reserved!</sch:assert>
+          </sch:rule>
+          <sch:rule context="pids">
+            <sch:assert test="pid/byte_array[1][@name='part_id']">In pids/pid missing part_id!</sch:assert>
+            <sch:assert test="pid/byte_array[2][@name='nonce']">In pids/pid missing nonce!</sch:assert>
+            <sch:assert test="pid/byte_array[3][@name='time_base']">In pids/pid missing time_base!</sch:assert>
+          </sch:rule>
+          <sch:rule context="knob">
+            <sch:assert test="number[1][@name='knob_id']">In knob missing knob_id!</sch:assert>
+            <sch:assert test="number[2][@name='knob_data']">In knob missing knob_data!</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="manifest_header" minOccurs="1" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:element ref="number" minOccurs="3" maxOccurs="3"/>
+            <xs:element ref="bit_field"/>
+            <xs:element ref="number"/>
+            <xs:element ref="byte_array"/>
+            <xs:element ref="number"/>
+            <xs:element ref="string"/>
+            <xs:element ref="number" minOccurs="5" maxOccurs="6"/>
+            <xs:element ref="byte_array"/>
+            <xs:element ref="byte_array"/>
+            <xs:sequence minOccurs="1" maxOccurs="2">
+                <xs:element ref="function_sign"/>
+            </xs:sequence>
+          </xs:sequence>
+          <xs:attributeGroup ref="layout" />
+        </xs:complexType>
+      </xs:element>
+      <xs:choice>
+        <xs:element ref="extensions" />
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+          <xs:element ref="extensions" />
+          <xs:element ref="signed_package_info_extension" />
+          <xs:element ref="package_info_extension" />
+          <xs:element ref="partition_info_extension" />
+          <xs:element ref="ifwi_partition_extension" />
+          <xs:element ref="key_manifest_extension" />
+          <xs:element ref="token_extension" />
+          <xs:element ref="platform_id_extension" />
+          <xs:element ref="byte_array" />
+        </xs:choice>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="layout" />
+  </xs:complexType>
+  
+  <xs:element name="extensions">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="signed_package_info_extension" />
+        <xs:element ref="package_info_extension" />
+        <xs:element ref="partition_info_extension" />
+        <xs:element ref="ifwi_partition_extension" />
+        <xs:element ref="key_manifest_extension" />
+        <xs:element ref="token_extension" />
+        <xs:element ref="platform_id_extension" />
+        <xs:element ref="byte_array" />
+      </xs:choice>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- METADATA DEFINITION-->
+  <xs:complexType name="metadata">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+      <xs:any processContents="lax" maxOccurs="unbounded" namespace="##local"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="layout" />
+  </xs:complexType>
+
+  <xs:element name="module_attribute_extension" >
+    <xs:complexType>
+      <xs:annotation>
+        <xs:appinfo>
+          <sch:pattern id="metadata_fixed">
+            <sch:rule context="module_attribute_extension">
+              <sch:assert test="number[1][@name='extension_type']">In module_attribute_extension missing extension_type!</sch:assert>
+              <sch:assert test="number[2][@name='extension_length']">In module_attribute_extension missing extension_length!</sch:assert>
+              <sch:assert test="number[3][@name='compression_type']">In module_attribute_extension missing compression_type!</sch:assert>
+              <sch:assert test="number[4][@name='encryption_type']">In module_attribute_extension missing encryption_type!</sch:assert>
+              <sch:assert test="number[5][@name='mode']">In module_attribute_extension missing mode!</sch:assert>
+              <sch:assert test="number[6][@name='reserved']">In module_attribute_extension missing reserved!</sch:assert>
+              <sch:assert test="number[7][@name='uncompressed_size']">In module_attribute_extension missing uncompressed_size!</sch:assert>
+              <sch:assert test="number[8][@name='compressed_size']">In module_attribute_extension missing compressed_size!</sch:assert>
+              <sch:assert test="number[9][@name='global_module_id_process_number']">In module_attribute_extension missing global_module_id_process_number!</sch:assert>
+              <sch:assert test="number[10][@name='global_module_id_vendor_id']">In module_attribute_extension missing global_module_id_vendor_id!</sch:assert>
+              <sch:assert test="function_hash[1][@name='image_hash'] or (function_hash[1][@name='image_hash_calculation'] and count(*)=12)">In module_attribute_extension missing image_hash!</sch:assert>
+              <sch:assert test="byte_array[1][@name='image_hash'] or image_hash[1] or count(*)=11">In module_attribute_extension missing hash!</sch:assert>
+            </sch:rule>
+          </sch:pattern>
+        </xs:appinfo>
+      </xs:annotation>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="10" maxOccurs="10"/>
+        <xs:element ref="function_hash" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="byte_array" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="image_hash" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="process_attribute_extension">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern id="process_attribute_extension_fixed">
+          <sch:rule context="process_attribute_extension">
+            <sch:assert test="number[1][@name='extension_type']">In process_attribute_extension missing extension_type!</sch:assert>
+            <sch:assert test="number[2][@name='extension_length']">In process_attribute_extension missing extension_length!</sch:assert>
+            <sch:assert test="bit_field[1][@name='flags']">In process_attribute_extension missing flags!</sch:assert>
+            <sch:assert test="number[3][@name='main_thread_id']">In process_attribute_extension missing main_thread_id!</sch:assert>
+            <sch:assert test="number[4][@name='private_code_base_address']">In process_attribute_extension missing private_code_base_address!</sch:assert>
+            <sch:assert test="number[5][@name='uncompressed_private_code_size']">In process_attribute_extension missing uncompressed_private_code_size!</sch:assert>
+            <sch:assert test="number[6][@name='reserved']">In process_attribute_extension missing reserved[1]!</sch:assert>
+            <sch:assert test="number[7][@name='bss_size']">In process_attribute_extension missing bss_size!</sch:assert>
+            <sch:assert test="number[8][@name='default_heap_size']">In process_attribute_extension missing reserved[2]!</sch:assert>
+            <sch:assert test="number[9][@name='main_thread_entry_point']">In process_attribute_extension missing main_thread_entry_point!</sch:assert>
+            <sch:assert test="number[10][@name='reserved']">In process_attribute_extension missing reserved[3]!</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="2" maxOccurs="2"/>
+        <xs:element ref="bit_field"/>
+        <xs:element ref="number" minOccurs="8" maxOccurs="8"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="module_encryption_metadata_file_extension">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern id="module_encryption_metadata_file_extension_fixed">
+          <sch:rule context="module_encryption_metadata_file_extension">
+            <sch:assert test="number[1][@name='extension_type']">In module_encryption_metadata_file_extension missing extension_type!</sch:assert>
+            <sch:assert test="number[2][@name='extension_length']">In module_encryption_metadata_file_extension missing extension_length!</sch:assert>
+            <sch:assert test="number[3][@name='iv_size']">In module_encryption_metadata_file_extension missing iv_size!</sch:assert>
+            <sch:assert test="byte_array[1][@name='iv']">In module_encryption_metadata_file_extension missing iv!</sch:assert>
+            <sch:assert test="function_hash[1][@name='image_hash']">In module_encryption_metadata_file_extension missing image_hash!</sch:assert>
+            <sch:assert test="byte_array[2][@name='loaded_image_hash'] or count(*)=5">In module_encryption_metadata_file_extension missing loaded_image_hash (it's optional - update scheme)!</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="3" maxOccurs="3"/>
+        <xs:element ref="byte_array"/>
+        <xs:element ref="function_hash"/>
+        <xs:element ref="byte_array" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="process_attribute_extension_cdf">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern id="process_attribute_extension_fixed_cdf">
+          <sch:rule context="process_attribute_extension_cdf">
+            <sch:assert test="number[1][@name='extension_type']">In process_attribute_extension missing extension_type!</sch:assert>
+            <sch:assert test="number[2][@name='extension_length']">In process_attribute_extension missing extension_length!</sch:assert>
+            <sch:assert test="number[3][@name='process_flags']">In process_attribute_extension missing process_flags!</sch:assert>
+            <sch:assert test="number[4][@name='main_thread_id']">In process_attribute_extension missing main_thread_id!</sch:assert>
+            <sch:assert test="number[5][@name='private_code_base_address']">In process_attribute_extension missing private_code_base_address!</sch:assert>
+            <sch:assert test="number[6][@name='uncompressed_private_code_size']">In process_attribute_extension missing uncompressed_private_code_size!</sch:assert>
+            <sch:assert test="number[7][@name='cm0_heap_size']">In process_attribute_extension missing cm0_heap_size!</sch:assert>
+            <sch:assert test="number[8][@name='bss_size']">In process_attribute_extension missing bss_size!</sch:assert>
+            <sch:assert test="number[9][@name='def_heap_size']">In process_attribute_extension missing def_heap_size!</sch:assert>
+            <sch:assert test="number[10][@name='main_thread_entry_point']">In process_attribute_extension missing main_thread_entry_point!</sch:assert>
+            <sch:assert test="number[11][@name='reserved']">In process_attribute_extension missing reserved!</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="11" maxOccurs="11"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="package_info_extension">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element name="package_info_header"  minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+              <xs:element ref="number"/>
+              <xs:element ref="number"/>
+              <xs:element ref="string" minOccurs="0" maxOccurs="1"/>
+              <xs:element ref="number"/>
+              <xs:element ref="byte_array"/>
+              <xs:element ref="number"/>
+              <xs:element ref="number"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="package_info_entries" minOccurs="1" maxOccurs="1">
+           <xs:complexType>
+              <xs:sequence minOccurs="1" maxOccurs="1">
+                 <xs:element name="entry"  minOccurs="0" maxOccurs="unbounded">
+                   <xs:complexType>
+                     <xs:sequence minOccurs="1" maxOccurs="1">
+                       <xs:element ref="string"/>
+                       <xs:element ref="number"/>
+                       <xs:element ref="number"/>
+                       <xs:element ref="function_hash"/>
+                     </xs:sequence>
+                     <xs:attributeGroup ref="layout" />
+                   </xs:complexType>
+                 </xs:element>
+              </xs:sequence>
+              <xs:attributeGroup ref="layout" />
+           </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="signed_package_info_extension">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element name="signed_package_info_header"  minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+              <xs:element ref="number" minOccurs="2" maxOccurs="2"/>
+              <xs:choice>
+                <xs:element ref="string" />
+                <xs:element ref="number" />
+              </xs:choice>
+              <xs:element ref="number" />
+              <xs:element ref="bit_field"/>
+              <xs:element ref="number" minOccurs="2" maxOccurs="4"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="signed_package_info_entries"  minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+              <xs:element name="entry"  minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:choice>
+                      <xs:element ref="number" />
+                      <xs:element ref="string" />
+                    </xs:choice>
+                    <xs:element ref="number" minOccurs="4" maxOccurs="4"/>
+                    <xs:element ref="function_hash"/>
+                  </xs:sequence>
+                  <xs:attributeGroup ref="layout" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="partition_info_extension">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element name="partition_info_header"  minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+              <xs:element ref="number"/>
+              <xs:element ref="number"/>
+              <xs:element ref="string"/>
+              <xs:element ref="number"/>
+              <xs:element ref="function_hash" minOccurs="0" maxOccurs="1"/>
+              <xs:element ref="byte_array" minOccurs="0" maxOccurs="1"/>
+              <xs:element ref="number"/>
+              <xs:element ref="number"/>
+              <xs:element ref="number"/>
+              <xs:element ref="number"/>
+              <xs:element ref="number"/>
+              <xs:element ref="byte_array"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="partition_info_entries"  minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+              <xs:element name="entry"  minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:element ref="string"/>
+                    <xs:element ref="number" minOccurs="2" maxOccurs="4"/>
+                    <xs:element ref="function_hash"/>
+                  </xs:sequence>
+                  <xs:attributeGroup ref="layout" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="ifwi_partition_extension">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="string"/>
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="function_hash"/>
+        <xs:element ref="byte_array"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+    
+  <xs:element name="platform_id_extension">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number"/>
+        <xs:element ref="number"/>
+        <xs:element ref="string"/>
+        <xs:element ref="byte_array"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="key_manifest_entry">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="bit_field"/>
+        <xs:element ref="number"/>
+        <xs:element ref="bit_field"/>
+        <xs:element ref="number" minOccurs="2" maxOccurs="2"/>
+        <xs:element ref="byte_array" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="file" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="key_manifest_extension_entries">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice>
+          <xs:any minOccurs="0" maxOccurs="unbounded"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="key_manifest_extension">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element name="key_manifest_header"  minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="number" minOccurs="8" maxOccurs="8"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="key_data"  minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+              <xs:element ref="byte_array"/>
+              <xs:element ref="number" minOccurs="4" maxOccurs="4"/>
+              <xs:element ref="byte_array"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="key_data_oem_keys" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="key_manifest_extension_entries" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="token_extension">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element name="token_extension_header"  minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="number" minOccurs="6" maxOccurs="6"/>
+              <xs:element ref="bit_field" minOccurs="1" maxOccurs="1"/>
+              <xs:element ref="number" minOccurs="2" maxOccurs="2"/>
+              <xs:element ref="byte_array" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="pids_optional" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="pids" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="pid" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element ref="byte_array" minOccurs="3" maxOccurs="3"/>
+                        </xs:sequence>
+                        <xs:attributeGroup ref="layout" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attributeGroup ref="layout" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="token_knobs">
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="1">
+              <xs:element ref="number"/>
+              <xs:element name="knobs">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name ="knob" minOccurs="1" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element ref="number" minOccurs="2" maxOccurs="2"/>
+                        </xs:sequence>
+                        <xs:attributeGroup ref="layout" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attributeGroup ref="layout" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attributeGroup ref="layout" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attributeGroup ref="layout" />
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Layout pre-defined functions-->
+
+  <xs:complexType name ="function_checksum">
+    <xs:all>
+      <xs:element name="operation" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="input" type="func_input"/>
+    </xs:all>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="function_sign">
+    <xs:all>
+      <xs:element name="key" type="func_param"/>
+      <xs:element name="sha" type="func_param"/>
+      <xs:element name="padding_scheme" type="func_padding_scheme" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="signing_utility" type="func_param"/>
+      <xs:element name="input" type="func_input"/>
+      <xs:element name="save_hash" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="save_hash_path" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="load_external_data" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="external_data" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="offline_signing" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="reverse" type="func_param" minOccurs="0" maxOccurs="1"/>
+    </xs:all>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="function_hash">
+    <xs:all>
+      <xs:element name="sha" type="func_param"/>
+      <xs:element name="input" type="func_input"/>
+      <xs:element name="save_hash" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="save_hash_path" type="func_param" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="reverse" type="func_param" minOccurs="0" maxOccurs="1"/>
+    </xs:all>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="image_hash">
+    <xs:sequence>
+        <xs:element ref="function_hash"/>
+        <xs:element ref="byte_array" minOccurs="1" maxOccurs="9"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="function_verify">
+    <xs:all>
+      <xs:element name="hash" type="func_param"/>
+      <xs:element name="custom_key">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="size" type="func_param"/>
+            <xs:element name="exponent" type="func_param"/>
+            <xs:element name="modulus" type="func_param"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="signature" type="func_param"/>
+    </xs:all>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="func_param">
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name ="func_padding_scheme">
+      <xs:attribute name="value" type="xs:string" use="required" />
+      <xs:attribute name="salt_len" type="xs:string" use="required" />
+  </xs:complexType>
+
+
+  <xs:complexType name ="func_input">
+    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="data">
+        <xs:complexType>
+          <xs:attribute name="start" type="xs:string"/>
+          <xs:attribute name="end"   type="xs:string"/>
+          <xs:attribute name="path"  type="xs:string"/>
+          <xs:attribute name="value"  type="xs:string"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name ="me_binary">
+      <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+      </xs:sequence>
+    <xs:attributeGroup ref="layout" />
+  </xs:complexType>
+  
+  <xs:complexType name ="me_partition">
+      <xs:sequence>
+        <xs:element ref="pdt_header_cs" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="pdt_entries_cs" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="table" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="manifest_cs" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="footer_cs" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="cosign_footer" minOccurs="0"/>
+        <xs:element ref="modules_cs" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="table" minOccurs="0" maxOccurs="1"/>
+        <xs:any minOccurs="0" maxOccurs="1" processContents="lax" />
+      </xs:sequence>
+    <xs:attributeGroup ref="layout" />
+  </xs:complexType>
+  <xs:complexType name ="token">
+      <xs:sequence>
+        <xs:element ref="byte_array" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="manifest" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="manifest_cs" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="footer_cs" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="cosign_footer" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="pts_footer" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+    <xs:attributeGroup ref="layout" />
+  </xs:complexType>
+ 
+  <xs:complexType name="cosign_footer">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="4" maxOccurs="4" />
+        <xs:element ref="crypto_block" minOccurs="1" maxOccurs="3" />
+        <xs:element ref="pts_debug" minOccurs="0" />
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+  
+  <xs:complexType name="pts_footer">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="4" maxOccurs="4" />
+        <xs:element ref="crypto_block" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="number" minOccurs="2" maxOccurs="2" />
+        <xs:element ref="byte_array" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+ 
+  <xs:complexType name="crypto_block">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="2" maxOccurs="2" />
+        <xs:element ref="byte_array" minOccurs="2" maxOccurs="2" />
+        <xs:element ref="function_sign" />
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+  
+  <xs:complexType name="manifest_cs">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+        <xs:element ref="byte_array" minOccurs="3" maxOccurs="3" />
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name="footer_cs">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="byte_array" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="modules_cs">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+        <xs:element ref="byte_array" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+  
+  <xs:complexType name="pts_debug">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+        <xs:element ref="number" minOccurs="2" maxOccurs="2" />
+        <xs:element ref="byte_array" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+  
+  <xs:complexType name="pdt_header_cs">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+
+  <xs:complexType name="pdt_entries_cs">
+    <xs:sequence minOccurs="0" maxOccurs="1">
+        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+    </xs:sequence>
+    <xs:attributeGroup ref="entry_attributes" />
+  </xs:complexType>
+  
+  <xs:complexType name="table">
+    <xs:sequence>
+    <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+    </xs:sequence>
+    <xs:attributeGroup ref="table" />
+  </xs:complexType>
+  
+  
+  <!-- Input functions rules-->
+  <xs:annotation>
+    <xs:appinfo>
+      <sch:pattern id="input_required_attrs" >
+        <sch:rule context="input/data">
+          <sch:assert test="(@start and @end) or @path or @value">
+            <sch:name/>: incorrect attributes. Expected: "path" or "value" or both "start" and "end"
+          </sch:assert>
+        </sch:rule>
+      </sch:pattern>
+    </xs:appinfo>
+  </xs:annotation>
+
+  <!-- SIMPLE TYPES-->
+
+  <xs:simpleType name="hex">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(0x)?[0-9A-Fa-f]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="order">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="big"/>
+      <xs:enumeration value="little"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="encryption_mode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ECB"/>
+      <xs:enumeration value="CBC"/>
+      <xs:enumeration value="CTR"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+
+<ibst>
+  <!-- "settings" node is not part of the binary -->
+  <settings>
+    <string name="signing_utility" size="1" value=""/>
+    <rsa_key name="cosign_key" value="keys/3k_test_key_private.pem" />
+    <number name="salt" value="32" />
+    <number name="algorithm" value="4" />
+    <number name="me_cosign_enabled" value="0" />
+    <number name="partition_cosign_enabled" value="0" />
+    <number name="token_cosign_enabled" value="0" />
+    <string name="input_file" value="MeRegion.bin" />
+    <number name="skip_fpt_alignment" value="0" />
+    <number name="offline_signing" value="0" />
+    <file name="signature_file" value="" required="false" />
+    <string name="save_hash_path" value="" />
+    <rsa_key name="ftpr_key" value="" />
+    <file name="ftpr_signature_file" value="" required="false" />
+    <string name="ftpr_save_hash_path" value="" />
+    <rsa_key name="rbe_key" value="" />
+    <file name="rbe_signature_file" value="" required="false" />
+    <string name="rbe_save_hash_path" value="" />
+    <rsa_key name="opr_key" value="" />  
+    <file name="opr_signature_file" value="" required="false" />
+    <string name="opr_save_hash_path" value="" />
+    <number name="pts_based_key_revocation" value="0" />
+    <number name="pts" value="0" />
+    <number name="pts_hash_algorithm" value="1" />
+    <file name="pts_signature_file" value="" required="false" />
+    <string name="pts_save_hash_path" value="" />
+    <rsa_key name="pts_key" value="" />
+    <string name="output_name" value="" />
+  </settings>
+
+  <!-- "layout" node describes structure of the binary -->
+  <layout>
+    <me_binary enabled="/settings/me_cosign_enabled.value != 0">
+        <byte_array size="0x1000" calculate="/decomposition/me_binary/layout_pointers.value"/>
+        <!-- exclude Descriptor Region Manifest -->
+        <fpt_header_cs>
+            <string name="header_markup" size="4" value="$FPT" />
+            <number name="number_of_entries" size="4" calculate="/decomposition/me_binary/fpt_header_cs/number_of_entries.value" />
+            <number name="header_version" size="1" value="0x20" />
+            <number name="entry_version" size="1" value="0x10" />
+            <number name="header_length" size="1" value="0x20" />
+            <function_checksum name="header_checksum">
+               <input>
+                  <data start="parent.offset" end="this.offset" />
+                  <data path="parent/reserved" />
+               </input>
+            </function_checksum>
+            <byte_array name="reserved" size="20" calculate="/decomposition/me_binary/fpt_header_cs/reserved_flags.value" />
+        </fpt_header_cs>
+        <table name="fpt_entries" count="/decomposition/me_binary/fpt_header_cs/number_of_entries.value">
+            <fpt_entry_cs>
+                <string name="partition_name" size="4" calculate="/decomposition/me_binary/fpt_entries/fpt_entry_cs{index}/partition_name.value" />
+                <number name="reserved" size="4" value="0" />
+                <number name="offset" size="4" calculate="parent/parent/parent/partitions/partition{index}.enabled ? parent/parent/parent/partitions/partition{index}.offset - parent/parent/parent/fpt_header_cs.offset : 0" />
+                <number name="length" size="4" calculate="parent/parent/parent/partitions/partition{index}.enabled ? parent/parent/parent/partitions/partition{index}.size : 0"/>
+                <number name="reserved" size="12" value="0" />
+                <number name="partition_flags" size="4" calculate="/decomposition/me_binary/fpt_entries/fpt_entry_cs{index}/partition_flags.value" />
+            </fpt_entry_cs>
+        </table>
+        <table name="partitions" count="/decomposition/me_binary/fpt_header_cs/number_of_entries.value" sort="/decomposition/me_binary/fpt_entries/fpt_entry_cs{index}/offset.value">
+            <partition align="0x1000" enabled="/decomposition/me_binary/partitions/partition{index}.enabled">
+                <number name="cpd" size="4" calculate="/decomposition/me_binary/partitions/partition{index}/cpd.value"/>
+                <blob_partition enabled="/decomposition/me_binary/partitions/partition{index}/blob_partition.enabled" calculate="/decomposition/me_binary/partitions/partition{index}/blob_partition.value"/>
+                <cpd_partition enabled="/decomposition/me_binary/partitions/partition{index}/cpd_partition.enabled">
+                    <pdt_header_cs>
+                        <number name="number_of_entries" size="4" calculate="/decomposition/me_binary/partitions/partition{index}/cpd_partition/pdt_header_cs/number_of_entries.value"/>
+                        <number name="header_version" size="1" value="1" />
+                        <number name="entry_version" size="1" value="1" />
+                        <number name="header_length" size="1" value="0x10" />
+                        <function_checksum name="header_checksum">
+                            <input>
+                                <data start="parent/parent/parent/cpd.offset" end="this.offset" />
+                                <data path="parent/partition_name" />
+                                <data path="parent/parent/partition_entries" />
+                            </input>
+                        </function_checksum>
+                        <string name="partition_name" size="4" calculate="/decomposition/me_binary/partitions/partition{index}/cpd_partition/pdt_header_cs/partition_name.value" />
+                    </pdt_header_cs>
+                    <table name="partition_entries" count="/decomposition/me_binary/partitions/partition{index}/cpd_partition/pdt_header_cs/number_of_entries.value">
+                        <pdt_entry_cs>
+                            <string name="entry_name" size="12" calculate="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/partition_entries/partition_entry{index}/entry_name.value" />
+                            <number name="manifest_offset" size="4" calculate="parent/parent/parent/manifest_cs.offset - parent/parent/parent/parent/cpd.offset" enabled="parent.index == 0"/>
+                            <number name="manifest_length" size="4" calculate="parent/parent/parent/manifest_cs.size + parent/parent/parent/cosign_footer.size" enabled="parent.index == 0"/>
+                            <bit_field name="offset" size="4" enabled="parent.index != 0">
+                                    <bit name="offset" bit_low="0" bit_high="24" calculate="parent/parent/parent/parent/modules/module_cs{index}/module.offset - parent/parent/parent/parent/parent/cpd.offset"/>
+                                    <bit name="compressed" bit_low="25" bit_high="25" calculate="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/partition_entries/partition_entry{index}/offset/compressed.value"/>
+                                    <bit name="reserved" bit_low="26" bit_high="31" value="0"/>
+                            </bit_field>
+                            <number name="length" size="4" calculate="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/partition_entries/partition_entry{index}/length.value" enabled="parent.index != 0"/>
+                            <number name="reserved" size="4" value="0" />
+                        </pdt_entry_cs>
+                    </table>
+                    <manifest_cs>
+                        <byte_array name="manifest_header" calculate="/decomposition/me_binary/partitions/partition{index}/cpd_partition/manifest_cs/manifest_header.value"/>
+                        <byte_array name="crypto_block" calculate="/decomposition/me_binary/partitions/partition{index}/cpd_partition/manifest_cs/crypto_block.value"/>
+                        <byte_array name="manifest_extensions" calculate="/decomposition/me_binary/partitions/partition{index}/cpd_partition/manifest_cs/manifest_extensions.value"/>
+                    </manifest_cs>
+                    <cosign_footer enabled="true" size="1052">
+                        <number name="header_id" value="0x544F4F46" size="4" />
+                        <number name="type" value="0" size="4"/>
+                        <number name="size" value="1052" size="4"/>
+                        <number name="algo" calculate="/settings/algorithm.value" size="4"/>
+                        <crypto_block enabled="parent/parent/pdt_header_cs/partition_name.value == 'RBEP'">
+                           <number name="module_size" size="4" calculate="parent/modulus.size / 4" />
+                           <number name="exponent_size" size="4" calculate="parent/exponent.size / 4" />
+                           <byte_array name="modulus" calculate="/settings/rbe_key.empty ? /settings/cosign_key.modulus : /settings/rbe_key.modulus" />
+                           <byte_array name="exponent" calculate="/settings/rbe_key.empty ? /settings/cosign_key.exponent : /settings/rbe_key.exponent" />
+                           <function_sign name="signature">
+                               <signing_utility calculate="/settings/signing_utility"/>
+                               <key value="/settings/rbe_key.empty ? /settings/cosign_key : /settings/rbe_key" />                          
+                               <sha value="256" />
+                               <padding_scheme value="PSS" salt_len="/settings/salt.value"/>
+                               <input>
+                                   <data path="parent/parent/parent/manifest_cs/manifest_header" />
+                                   <data path="parent/parent/parent/manifest_cs/manifest_extensions"/>
+                               </input>
+                               <save_hash calculate="/settings/rbe_save_hash_path.size > 0" />
+                               <save_hash_path calculate="/settings/rbe_save_hash_path.value" />
+                               <load_external_data calculate="/settings/rbe_signature_file.size > 0" />
+                               <external_data calculate="/settings/rbe_signature_file.data" />
+                               <offline_signing calculate="/settings/offline_signing.value" />
+                           </function_sign>
+                        </crypto_block>
+                        <crypto_block enabled="parent/parent/pdt_header_cs/partition_name.value == 'FTPR'">
+                           <number name="module_size" size="4" calculate="parent/modulus.size / 4" />
+                           <number name="exponent_size" size="4" calculate="parent/exponent.size / 4" />
+                           <byte_array name="modulus" calculate="/settings/ftpr_key.empty ? /settings/cosign_key.modulus : /settings/ftpr_key.modulus" />
+                           <byte_array name="exponent" calculate="/settings/ftpr_key.empty ? /settings/cosign_key.exponent : /settings/ftpr_key.exponent" />
+                           <function_sign name="signature">
+                               <signing_utility calculate="/settings/signing_utility"/>
+                               <key value="/settings/ftpr_key.empty ? /settings/cosign_key : /settings/ftpr_key" />                          
+                               <sha value="256" />
+                               <padding_scheme value="PSS" salt_len="/settings/salt.value"/>
+                               <input>
+                                   <data path="parent/parent/parent/manifest_cs/manifest_header" />
+                                   <data path="parent/parent/parent/manifest_cs/manifest_extensions"/>
+                               </input>
+                               <save_hash calculate="/settings/ftpr_save_hash_path.size > 0" />
+                               <save_hash_path calculate="/settings/ftpr_save_hash_path.value" />
+                               <load_external_data calculate="/settings/ftpr_signature_file.size > 0" />
+                               <external_data calculate="/settings/ftpr_signature_file.data" />
+                               <offline_signing calculate="/settings/offline_signing.value" />
+                           </function_sign>
+                        </crypto_block>
+                        <crypto_block enabled="parent/parent/pdt_header_cs/partition_name.value == 'OPR'">
+                           <number name="module_size" size="4" calculate="parent/modulus.size / 4" />
+                           <number name="exponent_size" size="4" calculate="parent/exponent.size / 4" />
+                           <byte_array name="modulus" calculate="/settings/opr_key.empty ? /settings/cosign_key.modulus : /settings/opr_key.modulus" />
+                           <byte_array name="exponent" calculate="/settings/opr_key.empty ? /settings/cosign_key.exponent : /settings/opr_key.exponent" />
+                           <function_sign name="signature">
+                               <signing_utility calculate="/settings/signing_utility"/>
+                               <key value="/settings/opr_key.empty ? /settings/cosign_key : /settings/opr_key" />                           
+                               <sha value="256" />
+                               <padding_scheme value="PSS" salt_len="/settings/salt.value"/>
+                               <input>
+                                   <data path="parent/parent/parent/manifest_cs/manifest_header" />
+                                   <data path="parent/parent/parent/manifest_cs/manifest_extensions"/>
+                               </input>
+                               <save_hash calculate="/settings/opr_save_hash_path.size > 0" />
+                               <save_hash_path calculate="/settings/opr_save_hash_path.value" />
+                               <load_external_data calculate="/settings/opr_signature_file.size > 0" />
+                               <external_data calculate="/settings/opr_signature_file.data" />
+                               <offline_signing calculate="/settings/offline_signing.value" />
+                           </function_sign>
+                        </crypto_block>
+                    </cosign_footer>
+                    <table name="modules" count="/decomposition/me_binary/partitions/partition{index}/cpd_partition/pdt_header_cs/number_of_entries.value" sort="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/partition_entries/partition_entry{index}/offset/offset.value">
+                        <module_cs enabled="this.index != 0">
+                            <align_compressed enabled="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/modules/module_cs{index}/function_compressed_size.enabled == true">
+                                <data_4096 align="0x1000" value="" size="0" enabled="this.offset &lt;= /decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/modules/module_cs{index}/module.offset"/>
+                                <data_64   align="0x40"   value="" size="0" enabled="this.offset &gt; /decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/modules/module_cs{index}/module.offset"/>
+                            </align_compressed>
+                            <align_decompressed enabled="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/modules/module_cs{index}/function_compressed_size.enabled == false">
+                                <data_4096 enabled="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/partition_entries/partition_entry{index}/offset/offset.value % 0x1000 == 0" align="0x1000" size="0" value=""/>
+                            </align_decompressed>
+                            <byte_array name="module" calculate="/decomposition/me_binary/partitions/partition{parent_index}/cpd_partition/modules/module_cs{index}/module.value" />
+                        </module_cs> 
+                    </table>
+                    <partition_align_fpt enabled="/settings/skip_fpt_alignment.value != 1" offset="parent/parent.offset + /decomposition/me_binary/fpt_entries/fpt_entry_cs{index}/length.value" value="" size="0"/>
+                    <partition_align_flexible enabled="/settings/skip_fpt_alignment.value == 1">
+                       <!-- Either set size to precisely what is in FPT or align end address to 0x1000 if size in FPT is too small -->
+                       <align_fpt enabled="parent/parent/parent.offset + /decomposition/me_binary/fpt_entries/fpt_entry_cs{index}/length.value >= this.offset"
+                                             offset="parent/parent/parent.offset + /decomposition/me_binary/fpt_entries/fpt_entry_cs{index}/length.value" value="" size="0"/>
+                       <align_1000 enabled="parent/parent/parent.offset + /decomposition/me_binary/fpt_entries/fpt_entry_cs{index}/length.value &lt; this.offset"
+                                             align="0x1000" value="" size="0"/>
+                     </partition_align_flexible>              
+                </cpd_partition>
+            </partition>
+        </table>
+    </me_binary>
+    
+    <me_partition enabled="/settings/partition_cosign_enabled.value != 0">
+        <pdt_header_cs>
+            <string name="header_marker" size="4" value="$CPD" />
+            <number name="number_of_entries" size="4" calculate="/decomposition/me_partition/pdt_header_cs/number_of_entries.value"/>
+            <number name="header_version" size="1" value="1" />
+            <number name="entry_version" size="1" value="1" />
+            <number name="header_length" size="1" value="0x10" />
+            <function_checksum name="header_checksum">
+                <input>
+                    <data start="parent.offset" end="this.offset" />
+                    <data path="parent/partition_name" />
+                    <data path="parent/parent/partition_entries" />
+                </input>
+            </function_checksum>
+            <string name="partition_name" calculate="/decomposition/me_partition/pdt_header_cs/partition_name.value" />
+        </pdt_header_cs>
+        <table name="partition_entries" count="/decomposition/me_partition/pdt_header_cs/number_of_entries.value">
+            <pdt_entry_cs>
+                <string name="entry_name" size="12" calculate="/decomposition/me_partition/partition_entries/partition_entry{index}/entry_name.value" />
+                <number name="manifest_offset" size="4" calculate="parent/parent/parent/manifest_cs.offset - parent/parent/parent.offset" enabled="parent.index == 0"/>
+                <number name="manifest_length" size="4" calculate="parent/parent/parent/manifest_cs.size + parent/parent/parent/cosign_footer.size" enabled="parent.index == 0"/>
+                <bit_field name="offset" size="4" enabled="parent.index != 0">
+                        <bit name="offset" bit_low="0" bit_high="24" calculate="parent/parent/parent/parent/modules/module_cs{index}/module.offset - parent/parent/parent/parent.offset"/>
+                        <bit name="compressed" bit_low="25" bit_high="25" calculate="/decomposition/me_partition/partition_entries/partition_entry{index}/offset/compressed.value"/>
+                        <bit name="reserved" bit_low="26" bit_high="31" value="0"/>
+                </bit_field>
+                <number name="length" size="4" calculate="/decomposition/me_partition/partition_entries/partition_entry{index}/length.value" enabled="parent.index != 0"/>
+                <number name="reserved" size="4" value="0" />
+            </pdt_entry_cs>
+        </table>
+        <manifest_cs>
+            <byte_array name="manifest_header" calculate="/decomposition/me_partition/manifest_cs/manifest_header.value"/>
+            <byte_array name="crypto_block" calculate="/decomposition/me_partition/manifest_cs/crypto_block.value"/>
+            <byte_array name="manifest_extensions" calculate="/decomposition/me_partition/manifest_cs/manifest_extensions.value"/>
+        </manifest_cs>
+        <cosign_footer enabled="true" size="1052">
+            <number name="header_id" value="0x544F4F46" size="4" />
+            <number name="type" value="0" size="4"/>
+            <number name="size" value="1052" size="4"/>
+            <number name="algo" calculate="/settings/algorithm.value" size="4"/>
+            <crypto_block>
+               <number name="module_size" size="4" calculate="parent/modulus.size / 4" />
+               <number name="exponent_size" size="4" calculate="parent/exponent.size / 4" />
+               <byte_array name="modulus" calculate="/settings/cosign_key.modulus" />
+               <byte_array name="exponent" calculate="/settings/cosign_key.exponent" />
+               <function_sign name="signature">
+                   <signing_utility calculate="/settings/signing_utility"/>
+                   <key value="/settings/cosign_key" />
+                   <sha value="256" />
+                   <padding_scheme value="PSS" salt_len="/settings/salt.value"/>
+                   <input>
+                       <data path="parent/parent/parent/manifest_cs/manifest_header" />
+                       <data path="parent/parent/parent/manifest_cs/manifest_extensions"/>
+                   </input>
+                   <save_hash calculate="/settings/save_hash_path.size > 0" />
+                   <save_hash_path calculate="/settings/save_hash_path.value" />
+                   <load_external_data calculate="/settings/signature_file.size > 0" />
+                   <external_data calculate="/settings/signature_file.data" />
+                   <offline_signing calculate="/settings/offline_signing.value" />
+               </function_sign>
+            </crypto_block>
+        </cosign_footer>
+        <table name="modules" count="/decomposition/me_partition/pdt_header_cs/number_of_entries.value" sort="/decomposition/me_partition/partition_entries/partition_entry{index}/offset/offset.value">
+            <module_cs enabled="this.index != 0">
+                <byte_array name="module" align_module="/decomposition/me_partition/modules/module_cs{index}/function_compressed_size.enabled ? 0x1000 : 0" calculate="/decomposition/me_partition/modules/module_cs{index}/module.value" />
+            </module_cs> 
+        </table>
+        <partition_align align="0x1000" value="" size="0"/>
+    </me_partition>
+    <token enabled="/settings/token_cosign_enabled.value != 0">
+        <manifest_cs>
+            <byte_array name="manifest_header" calculate="/decomposition/token/manifest_cs/manifest_header.value"/>
+            <byte_array name="crypto_block" calculate="/decomposition/token/manifest_cs/crypto_block.value"/>
+            <byte_array name="manifest_extensions" calculate="/decomposition/token/manifest_cs/manifest_extensions.value"/>
+        </manifest_cs>
+        <cosign_footer enabled="true" size="1052">
+            <number name="header_id" value="0x544F4F46" size="4" />
+            <number name="type" value="0" size="4"/>
+            <number name="size" value="1052" size="4"/>
+            <number name="algo" calculate="/settings/algorithm.value" size="4"/>
+            <crypto_block>
+               <number name="module_size" size="4" calculate="parent/modulus.size / 4" />
+               <number name="exponent_size" size="4" calculate="parent/exponent.size / 4" />
+               <byte_array name="modulus" calculate="/settings/cosign_key.modulus" />
+               <byte_array name="exponent" calculate="/settings/cosign_key.exponent" />
+               <function_sign name="signature">
+                   <signing_utility calculate="/settings/signing_utility"/>
+                   <key value="/settings/cosign_key" />
+                   <sha value="256" />
+                   <padding_scheme value="PSS" salt_len="/settings/salt.value"/>
+                   <input>
+                       <data path="parent/parent/parent/manifest_cs/manifest_header" />
+                       <data path="parent/parent/parent/manifest_cs/manifest_extensions"/>
+                   </input>
+                   <save_hash calculate="/settings/save_hash_path.size > 0" />
+                   <save_hash_path calculate="/settings/save_hash_path.value" />
+                   <load_external_data calculate="/settings/signature_file.size > 0" />
+                   <external_data calculate="/settings/signature_file.data" />
+                   <offline_signing calculate="/settings/offline_signing.value" />
+               </function_sign>
+            </crypto_block>
+
+        </cosign_footer>
+        <pts_footer enabled="/settings/pts_based_key_revocation.value != 0 " size="1092">
+            <number name="header_id" value="0x544F4F46" size="4" />
+            <number name="type" value="1" size="4"/>
+            <number name="size" value="1092" size="4"/>
+            <number name="algo" calculate="/settings/algorithm.value" size="4"/>
+            <crypto_block>
+            <number name="module_size" calculate="parent/modulus.size / 4" size="4"/>
+            <number name="exponent_size" calculate="parent/exponent.size / 4" size="4"/>
+            <byte_array name="modulus" calculate="/settings/pts_key.modulus" />
+            <byte_array name="exponent" calculate="/settings/pts_key.exponent" />
+            <function_sign name="signature">
+                <signing_utility calculate="/settings/signing_utility"/>
+                <key value="/settings/pts_key" />
+                <sha value="256" />
+                <padding_scheme value="PSS" salt_len="/settings/salt.value"/>
+                <input>
+                    <data path="parent/parent/header_id" />
+                    <data path="parent/parent/type"/>
+                    <data path="parent/parent/size"/>
+                    <data path="parent/parent/algo"/>
+                    <data path="parent/module_size"/>
+                    <data path="parent/exponent_size"/>
+                    <data path="parent/parent/pts_value"/>
+                    <data path="parent/parent/hash_algorithm"/>
+                    <data path="parent/parent/hash"/>                   
+                </input>
+                <save_hash calculate="/settings/pts_save_hash_path.size > 0" />
+                <save_hash_path calculate="/settings/pts_save_hash_path.value" />
+                <load_external_data calculate="/settings/pts_signature_file.size > 0" />
+                <external_data calculate="/settings/pts_signature_file.data" />
+                <offline_signing calculate="/settings/offline_signing.value" />
+            </function_sign>
+            </crypto_block>
+            <number name="pts_value" calculate="/settings/pts.value" size="4" />
+            <number name="hash_algorithm" calculate="/settings/pts_hash_algorithm.value" size="4" />
+            <byte_array name="hash" calculate="/settings/cosign_key.hashed_key" size="32"/>
+        </pts_footer>
+    </token>
+  </layout>
+  
+  <!-- "decomposition" node used to get data from the binary -->  
+  <decomposition file="/settings/input_file.value">
+    <me_binary enabled="/settings/me_cosign_enabled.value != 0">
+        <byte_array name="layout_pointers" size="0x1000"/>
+        <fpt_header_cs>
+            <byte_array name="reserved" size="4" />
+            <number name="number_of_entries" size="4" />
+            <byte_array name="header_info" size="4" />
+            <byte_array name="reserved_flags" size="20" />
+         </fpt_header_cs>
+         <table name="fpt_entries" count="parent/fpt_header_cs/number_of_entries.value">
+            <fpt_entry_cs>
+                <string name="partition_name" size="4"/>
+                <byte_array name="reserved" size="4" />
+                <number name="offset" size="4"/>
+                <number name="length" size="4"/>
+                <byte_array name="reserved" size="12" />
+                <number name="partition_flags" size="4"/>
+            </fpt_entry_cs>
+         </table>
+         <table name="partitions" count="parent/fpt_header_cs/number_of_entries.value" sort="parent/fpt_entries/fpt_entry_cs{index}/offset.value" >
+            <partition name="partition" align="0x1000" enabled="parent/parent/fpt_entries/fpt_entry_cs{index}/length.value != 0">
+                <number name="cpd" size="4"/>
+                <byte_array name="blob_partition" enabled="parent/cpd.value != 0x44504324" size="parent/parent/parent/fpt_entries/fpt_entry_cs{index}/length.value - parent/cpd.size" />
+                <cpd_partition name="cpd_partition" enabled="parent/cpd.value == 0x44504324">
+                    <pdt_header_cs>
+                        <number name="number_of_entries" size="4"/>
+                        <byte_array name="reserved" size="4" />
+                        <string name="partition_name" size="4"/>
+                    </pdt_header_cs>
+                    <table name="partition_entries" count="parent/pdt_header_cs/number_of_entries.value" >
+                        <partition_entry name="partition_entry">
+                            <string name="entry_name" size="12"/>
+                            <bit_field name="offset" size="4">
+                                <bit name="offset" bit_low="0" bit_high="24"/>
+                                <bit name="compressed" bit_low="25" bit_high="25"/>
+                                <bit name="reserved" bit_low="26" bit_high="31"/>
+                            </bit_field>
+                            <number name="length" size="4" />
+                            <byte_array name="reserved" size="4" />
+                        </partition_entry>
+                    </table>
+                    <manifest_cs>
+                        <byte_array name="manifest_header" size="128" />
+                        <byte_array name="crypto_block" size="516" />
+                        <byte_array name="manifest_extensions" size="parent/parent/partition_entries/partition_entry0/length.value - 644" />
+                    </manifest_cs>
+                    <table name="modules" count="parent/pdt_header_cs/number_of_entries.value" sort="parent/partition_entries/partition_entry{index}/offset/offset.value" >
+                        <module_cs enabled="this.index != 0">
+                            <byte_array name="align" align="parent/parent/parent/partition_entries/partition_entry{index}/offset/offset.value + parent/parent/parent/parent.offset" size="0" value="" />
+                            <function_compressed_size enabled="parent/parent/parent/partition_entries/partition_entry{index}/offset/compressed.value != 0" >
+                                <start_offset value="parent/parent/parent/parent/cpd.offset" />
+                                <module_name value="parent/parent/parent/partition_entries/partition_entry{index}/entry_name.value" />
+                                <count value="parent/parent/parent/pdt_header_cs/number_of_entries.value" />
+                            </function_compressed_size>
+                            <byte_array name="module" offset_aligned="parent/parent/parent/partition_entries/partition_entry{index}/offset/offset.value" size="parent/function_compressed_size.enabled ? parent/function_compressed_size.value : parent/parent/parent/partition_entries/partition_entry{index}/length.value"/>
+                        </module_cs> 
+                    </table>
+                    <partition_align align="parent/parent.offset + parent/parent/parent/parent/fpt_entries/fpt_entry_cs{index}/length.value" value="" size="0"/>
+                </cpd_partition>
+            </partition>
+         </table>
+     </me_binary>
+     
+     <me_partition enabled="/settings/partition_cosign_enabled.value != 0">
+        <pdt_header_cs>
+            <byte_array name="reserved" size="4" />
+            <number name="number_of_entries" size="4"/>
+            <byte_array name="reserved" size="4" />
+            <string name="partition_name" size="4"/>
+        </pdt_header_cs>
+        <table name="partition_entries" count="parent/pdt_header_cs/number_of_entries.value" >
+            <partition_entry name="partition_entry">
+                <string name="entry_name" size="12"/>
+                <bit_field name="offset" size="4">
+                    <bit name="offset" bit_low="0" bit_high="24"/>
+                    <bit name="compressed" bit_low="25" bit_high="25"/>
+                    <bit name="reserved" bit_low="26" bit_high="31"/>
+                </bit_field>
+                <number name="length" size="4" />
+                <byte_array name="reserved" size="4" />
+            </partition_entry>
+        </table>
+        <manifest_cs>
+            <byte_array name="manifest_header" size="128" />
+            <byte_array name="crypto_block" size="516" />
+            <byte_array name="manifest_extensions" size="parent/parent/partition_entries/partition_entry0/length.value - 644" />
+        </manifest_cs>
+        <table name="modules" count="parent/pdt_header_cs/number_of_entries.value" sort="parent/partition_entries/partition_entry{index}/offset/offset.value" >
+            <module_cs enabled="this.index != 0">
+                <byte_array name="align" align="parent/parent/parent/partition_entries/partition_entry{index}/offset/offset.value" size="0" value="" />
+                <function_compressed_size enabled="parent/parent/parent/partition_entries/partition_entry{index}/offset/compressed.value != 0" >
+                    <start_offset value="parent/parent/parent.offset" />
+                    <module_name value="parent/parent/parent/partition_entries/partition_entry{index}/entry_name.value" />
+                    <count value="parent/parent/parent/pdt_header_cs/number_of_entries.value" />
+                </function_compressed_size>
+
+                <byte_array name="module" size="parent/function_compressed_size.enabled ? parent/function_compressed_size.value : parent/parent/parent/partition_entries/partition_entry{index}/length.value"/>
+            </module_cs> 
+        </table>
+     </me_partition>
+     <token enabled="/settings/token_cosign_enabled.value != 0">
+        <manifest_cs>
+            <byte_array name="manifest_header" size="128" />
+            <byte_array name="crypto_block" size="516" />
+            <byte_array name="manifest_extensions" size="this.buffer_size - 644" />
+        </manifest_cs>
+     </token>
+  </decomposition>
+</ibst>

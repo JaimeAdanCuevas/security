@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018-2022 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+<ibst_overrides>
+    <cosign>
+        <string name="package_name" value="FPM" />
+        <number name="vendor_id" value="0x8086" />
+        <byte_array name="binary_hash" value="0" size="32"/>
+        <number name="svn" value="0" />
+        <number name="hash_type" value="1" />
+        <string name="output_name" value="FPM.bin" />
+        <string name="signing_utility" value=""/>
+        <string name="signing_utility_timeout" value="60"/>
+    </cosign>
+    <cosign>
+        <string name="package_name" value="ACMM" />
+        <number name="vendor_id" value="0x8086" />
+        <byte_array name="binary_hash" value="0" size="32"/>
+        <number name="svn" value="0" />
+        <number name="hash_type" value="2" />
+        <string name="output_name" value="ACMM.bin" />
+        <string name="signing_utility" value=""/>
+        <string name="signing_utility_timeout" value="60"/>
+    </cosign>
+    <cosign>
+        <string name="package_name" value="NWLM" />
+        <byte_array name="binary_hash" value="0" size="32"/>
+        <number name="svn" value="0" />
+        <number name="hash_type" value="3" />
+        <file name="module_bin" value="data/NetworkLoader.bin" />
+        <number name="fw_type" value="0" />
+        <number name="fw_subtype" value="0" />
+        <string name="output_name" value="NWLM.bin" />
+        <string name="signing_utility" value=""/>
+        <string name="signing_utility_timeout" value="60"/>
+    </cosign>
+    <cosign>
+        <string name="package_name" value="OSLM" />
+        <byte_array name="binary_hash" value="0" size="32"/>
+        <number name="svn" value="0" />
+        <number name="hash_type" value="4" />
+        <file name="module_bin" value="data/OsLoader.bin" />
+        <number name="fw_type" value="0" />
+        <number name="fw_subtype" value="0" />
+        <string name="output_name" value="OSLM.bin" />
+        <string name="signing_utility" value=""/>
+        <string name="signing_utility_timeout" value="60"/>
+    </cosign>
+</ibst_overrides>

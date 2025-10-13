@@ -1,0 +1,478 @@
+<!--
+INTEL CONFIDENTIAL
+Copyright 2018 Intel Corporation.
+This software and the related documents are Intel copyrighted materials, and
+your use of them is governed by the express license under which they were
+provided to you (License).Unless the License provides otherwise, you may not
+use, modify, copy, publish, distribute, disclose or transmit this software or
+the related documents without Intel's prior written permission.
+
+This software and the related documents are provided as is, with no express or
+implied warranties, other than those that are expressly stated in the License.
+-->
+
+<ibst>
+   <settings>
+      <file name="oem_signing_key_bin" value="" required="false">
+         <decompose>
+           <data name="key_bit_size" start="0x1" end="0x3"/>
+           <data name="exponent" start="0x3" end="0x7"/>
+           <data name="modulus" start="0x7" end="0x107"/>
+         </decompose>
+      </file>
+
+      <number name="ftpr_svn" value="0x00000001" />
+      <number name="vcn" value="0" />
+      <version name="ftpr_version" value="11.0.0.7009" />
+      <rsa_key name="ftpr_key" value="data/DBG_KEY.bin" />
+
+      <elf_file name="rbe_elf" value="data/rbe.elf" >
+         <module_entry value="ModuleEntry" />
+         <objcopy_args value="-O binary" />
+         <objcopy_path value="" />
+         <objdump_args value="-t" />
+         <objdump_path value="" />
+         <markers>
+            <image_text_start value="_image_text_start" />
+            <image_text_end value="_image_text_end" />
+            <image_ram_start value="_image_ram_start" />
+            <image_ram_end value="_image_ram_end" />
+         </markers>
+      </elf_file>
+
+      <elf_file name="manuf_elf" value="data/manuf.elf" >
+         <module_entry value="ModuleEntry" />
+         <objcopy_args value="-O binary" />
+         <objcopy_path value="" />
+         <objdump_args value="-t" />
+         <objdump_path value="" />
+         <markers>
+            <image_text_start value="_image_text_start" />
+            <image_text_end value="_image_text_end" />
+            <image_ram_start value="_image_ram_start" />
+            <image_ram_end value="_image_ram_end" />
+         </markers>
+      </elf_file>
+
+      <date name="date" />
+      <!-- If empty, default signing utility is used -->
+      <string name="signing_utility" size="1" value=""/>
+   </settings>
+
+   <layout>
+      <rom_bypass>
+         <number name="jump_instruction" size="4" value="0x020FEBE9" />
+         <byte_array size="12" value ="0" />
+      </rom_bypass>
+      <fpt>
+         <fpt_header>
+            <string name="header_markup" size="4" value="$FPT" />
+            <number name="number_of_entries" size="4" calculate="parent/parent/entries.child_count" />
+            <number name="header_version" size="1" value="0x20" />
+            <number name="entry_version" size="1" value="0x10" />
+            <number name="header_length" size="1" value="0x20" />
+            <function_checksum name="header_checksum">
+               <input>
+                  <data start="parent.offset" end="this.offset" />
+                  <data path="parent/reserved" />
+               </input>
+            </function_checksum>
+            <byte_array name="reserved" size="20" value="0xFFFFFFFF" /> <!-- will be padded with zeros! -->
+         </fpt_header>
+         <entries>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="FTPR" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/ftpr.offset" />
+               <number name="length" size="4" calculate="/layout/ftpr.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="0" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="FTUP" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" value="0" />
+               <number name="length" size="4" value="0" />
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="0xFF000000" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="DLMP" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/dlmp.offset" />
+               <number name="length" size="4" calculate="/layout/dlmp.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="0" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="MFS" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/mfs.offset" />
+               <number name="length" size="4" calculate="/layout/mfs.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="1" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="ROMB" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/romb.offset" />
+               <number name="length" size="4" calculate="/layout/romb.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="1" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="FPTB" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/fptb.offset" />
+               <number name="length" size="4" calculate="/layout/fptb.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="1" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="MFSB" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/mfsb.offset" />
+               <number name="length" size="4" calculate="/layout/mfsb.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="1" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="FLOG" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/flog.offset" />
+               <number name="length" size="4" calculate="/layout/flog.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="1" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="UTOK" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/utok.offset" />
+               <number name="length" size="4" calculate="/layout/utok.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="1" />
+            </fpt_entry>
+            <fpt_entry>
+               <string name="partition_name" size="4" value="FCP" />
+               <number name="reserved" size="4" value="0" />
+               <number name="offset" size="4" calculate="/layout/fcp.offset" />
+               <number name="length" size="4" calculate="/layout/fcp.size"/>
+               <number name="reserved" size="12" value="0" />
+               <number name="partition_flags" size="4" value="1" />
+            </fpt_entry>
+         </entries>
+      </fpt>
+
+      <partition name="romb" align="0x1000" size="0" value="" />
+
+      <partition name="fptb" align="0x1000">
+         <byte_array offset="parent.offset + 0x1000" size="0" value="" />
+      </partition>
+
+      <partition name="mfsb" align="0x1000">
+         <byte_array offset="parent.offset + 0x2000" size="0" value="" />
+      </partition>
+
+      <partition name="mfs" align="0x1000">
+         <byte_array offset="parent.offset + 0x2000" size="0" value="" />
+      </partition>
+
+      <partition name="flog" align="0x1000">
+         <byte_array offset="parent.offset + 0x1000" size="0" value="" />
+      </partition>
+
+      <partition name="utok" align="0x1000">
+         <byte_array offset="parent.offset + 0x2000" size="0" value="" />
+      </partition>
+
+      <partition name="dlmp" align="0x1000">
+         <byte_array offset="parent.offset + 0x18000" size="0" value="" />
+      </partition>
+
+      <partition name="ftpr" align="0x1000">
+         <pdt>
+            <pdt_header>
+               <string name="header_marker" size="4" value="$CPD" />
+               <number name="number_of_entries" size="4" calculate="parent/parent/entries.child_count" />
+               <number name="header_version" size="1" value="1" />
+               <number name="entry_version" size="1" value="1" />
+               <number name="header_length" size="1" value="0x10" />
+               <function_checksum name="header_checksum">
+                  <input>
+                     <data start="parent.offset" end="this.offset" />
+                     <data path="parent/partition_name" />
+                  </input>
+               </function_checksum>
+               <string name="partition_name" size="4" value="FTPR" />
+            </pdt_header>
+            <entries>
+               <pdt_entry>
+                  <string name="entry_name" size="12" value="FTPR.man" />
+                  <number name="offset" size="4" calculate="parent/parent/parent/parent/manifest.offset - parent/parent/parent/parent.offset" />
+                  <number name="length" size="4" calculate="parent/parent/parent/parent/manifest.size" />
+                  <number name="reserved" size="4" value="0" />
+               </pdt_entry>
+               <pdt_entry>
+                  <string name="entry_name" size="12" value="rbe" />
+                  <number name="offset" size="4" calculate="parent/parent/parent/parent/rbe.offset - parent/parent/parent/parent.offset" />
+                  <number name="length" size="4" calculate="parent/parent/parent/parent/rbe.size" />
+                  <number name="reserved" size="4" value="0" />
+               </pdt_entry>
+               <pdt_entry>
+                  <string name="entry_name" size="12" value="rbe.met" />
+                  <number name="offset" size="4" calculate="parent/parent/parent/parent/rbe_met.offset - parent/parent/parent/parent.offset" />
+                  <number name="length" size="4" calculate="parent/parent/parent/parent/rbe_met.size" />
+                  <number name="reserved" size="4" value="0" />
+               </pdt_entry>
+               <pdt_entry>
+                  <string name="entry_name" size="12" value="manuf" />
+                  <number name="offset" size="4" calculate="parent/parent/parent/parent/manuf.offset - parent/parent/parent/parent.offset" />
+                  <number name="length" size="4" calculate="parent/parent/parent/parent/manuf.size" />
+                  <number name="reserved" size="4" value="0" />
+               </pdt_entry>
+               <pdt_entry>
+                  <string name="entry_name" size="12" value="manuf.met" />
+                  <number name="offset" size="4" calculate="parent/parent/parent/parent/manuf_met.offset - parent/parent/parent/parent.offset" />
+                  <number name="length" size="4" calculate="parent/parent/parent/parent/manuf_met.size" />
+                  <number name="reserved" size="4" value="0" />
+               </pdt_entry>
+            </entries>
+         </pdt>
+         <manifest>
+            <manifest_header>
+               <number name="header_type" size="4" value="4" />
+               <number name="header_length" size="4" calculate="parent.size / 4" />
+               <number name="header_version" size="4" value="0x10000" />
+               <bit_field name="flags" size="4">
+                  <bit name="pv_state" bit_low="0" bit_high="0" value="0" />
+                  <bit name="reserved" bit_low="1" bit_high="30" value="0" />
+                  <bit name="flags_debug" bit_low="31" bit_high="31" value="1"/>
+               </bit_field>
+               <number name="vendor" size="4" value="0x8086" />
+               <byte_array name="date" size="4" calculate="/settings/date.bcd" />
+               <number name="size" size="4" calculate="parent/parent.size / 4" />
+               <string name="header_id" size="4" value="$MN2" />
+               <number name="reserved" size="4" value="0" />
+               <number name="version" size="8" calculate="/settings/ftpr_version.value" />
+               <number name="svn" size="4" calculate="/settings/ftpr_svn.value" />
+               <number name="reserved" size="72" value="0" />
+               <number name="modulus_size" size="4" calculate="parent/modulus.size / 4" />
+               <number name="exponent_size" size="4" calculate="parent/exponent.size / 4" />
+               <byte_array name="modulus" calculate="/settings/ftpr_key.modulus" />
+               <byte_array name="exponent" calculate="/settings/ftpr_key.exponent" />
+               <function_sign name="signature">
+                  <signing_utility calculate="/settings/signing_utility"/>
+                  <key value="/settings/ftpr_key" />
+                  <sha value="256" />
+                  <padding_scheme value="v1_5" salt_len=""/>
+                  <input>
+                     <data start="parent.offset" end="parent/modulus.offset" />
+                     <data path="parent/parent/partition_info_extension" />
+                     <data path="parent/parent/platform_id_extension" />
+                  </input>
+               </function_sign>
+            </manifest_header>
+            <partition_info_extension>
+               <partition_info_header>
+                  <number name="extension_type" size="4" value="3" />
+                  <number name="extension_length" size="4" calculate="parent/parent.size" />
+                  <string name="partition_name" size="4" calculate="parent/parent/parent/parent/pdt/pdt_header/partition_name.value" />
+                  <number name="partition_length" size="4" calculate="parent/parent/parent/parent.size" />
+                  <function_hash name="partition_hash">
+                     <sha value="256" />
+                     <input>
+                        <data path="parent/parent/parent/parent/pdt" />
+                        <data path="parent/parent/parent/parent/rbe_met" />
+                        <data path="parent/parent/parent/parent/rbe" />
+                        <data path="parent/parent/parent/parent/manuf_met" />
+                        <data path="parent/parent/parent/parent/manuf" />
+                        <data start="parent/parent/parent/parent/manuf.offset + parent/parent/parent/parent/manuf.size" end="parent/parent/parent/parent.offset + parent/parent/parent/parent.size" />
+                     </input>
+                  </function_hash>
+                  <number name="version_control_number" size="4" calculate="/settings/vcn.value" />
+                  <number name="partition_version" size="4" value="0x10000000" />
+                  <number name="data_format_version" size="4" value="0x00010000" />
+                  <number name="instance_id" size="4" value="1" />
+                  <number name="flags" size="4" value="0x00000000" />
+                  <byte_array name="reserved" size="20" value="FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" />
+               </partition_info_header>
+               <partition_info_entries>
+                  <entry>
+                     <string name="name" size="12" value="rbe" />
+                     <number name="type" size="1" value="0" />
+                     <number name="reserved" size="3" value="0xFFFF00" />
+                     <number name="metadata_size" size="4" calculate="parent/parent/parent/parent/parent/rbe_met.size" />
+                     <function_hash name="metadata_hash">
+                        <sha value="256" />
+                        <input>
+                           <data path="parent/parent/parent/parent/parent/rbe_met" />
+                        </input>
+                     </function_hash>
+                  </entry>
+                  <entry>
+                     <string name="name" size="12" value="manuf" />
+                     <number name="type" size="1" value="0" />
+                     <number name="reserved" size="3" value="0xFFFF00" />
+                     <number name="metadata_size" size="4" calculate="parent/parent/parent/parent/parent/manuf_met.size" />
+                     <function_hash name="metadata_hash">
+                        <sha value="256" />
+                        <input>
+                           <data path="parent/parent/parent/parent/parent/manuf_met" />
+                        </input>
+                     </function_hash>
+                  </entry>
+               </partition_info_entries>
+            </partition_info_extension>
+            <platform_id_extension>
+               <number name="extension_type" size="4" value="50" />
+               <number name="extension_length" size="4" calculate="parent.size" />
+               <string name="sps_platform_id" size="4" value="RCHA" />
+               <byte_array name="reserved" size="4" value="0" />
+            </platform_id_extension>
+         </manifest>
+
+         <metadata name="rbe_met">
+            <module_attribute_extension>
+               <number name="extension_type" size="4" value="10" />
+               <number name="extension_length" size="4" calculate="parent.size" />
+               <number name="compression_type" size="1" value="0" />
+               <number name="encryption_type" size="1" value="0" />
+               <number name="mode" size="1" value="0" />
+               <number name="reserved" size="1" value="0" />
+               <number name="uncompressed_size" size="4" calculate="parent/parent/parent/rbe.size" />
+               <number name="compressed_size" size="4" calculate="parent/uncompressed_size.value" />
+               <number name="global_module_id_process_number" size="2" value="1" />
+               <number name="global_module_id_vendor_id" size="2" value="0x8086" />
+               <function_hash name="image_hash">
+                  <sha value="256" />
+                  <input>
+                     <data path="parent/parent/parent/rbe" />
+                  </input>
+               </function_hash>
+            </module_attribute_extension>
+            <process_attribute_extension>
+               <number name="extension_type" size="4" value="5" />
+               <number name="extension_length" size="4" calculate="parent.size" />
+               <bit_field name="flags" size="4">
+                  <bit name="fault_tolerant" bit_low="0" bit_high="0" value="0" />
+                  <bit name="permanent_process" bit_low="1" bit_high="1" value="1" />
+                  <bit name="single_instance" bit_low="2" bit_high="2" value="1" />
+                  <bit name="trusted_snd_rev_sender" bit_low="3" bit_high="3" value="0" />
+                  <bit name="trusted_notify_sender" bit_low="4" bit_high="4" value="0" />
+                  <bit name="public_snd_rev_receiver" bit_low="5" bit_high="5" value="0" />
+                  <bit name="public_notify_receiver" bit_low="6" bit_high="6" value="0" />
+                  <bit name="reserved" bit_low="7" bit_high="31" value="0" />
+               </bit_field>
+               <number name="main_thread_id" size="4" value="0xC" />
+               <number name="private_code_base_address" size="4" calculate="/settings/rbe_elf.image_text_start" />
+               <number name="uncompressed_private_code_size" size="4" calculate="/settings/rbe_elf.image_text_end - /settings/rbe_elf.image_text_start" />
+               <number name="reserved" size="4" value="0" />
+               <number name="bss_size" size="4" calculate="/settings/rbe_elf.image_ram_end - /settings/rbe_elf.image_ram_start" />
+               <number name="default_heap_size" size="4" value="0x1000" />
+               <number name="main_thread_entry_point" size="4" calculate="/settings/rbe_elf.entry_address" />
+               <number name="reserved" size="28" value="0" />
+            </process_attribute_extension>
+         </metadata>
+
+         <metadata name="manuf_met">
+            <module_attribute_extension>
+               <number name="extension_type" size="4" value="10" />
+               <number name="extension_length" size="4" calculate="parent.size" />
+               <number name="compression_type" size="1" value="0" />
+               <number name="encryption_type" size="1" value="0" />
+               <number name="mode" size="1" value="0" />
+               <number name="reserved" size="1" value="0" />
+               <number name="uncompressed_size" size="4" calculate="parent/parent/parent/manuf.size" />
+               <number name="compressed_size" size="4" calculate="parent/uncompressed_size.value" />
+               <number name="global_module_id_process_number" size="2" value="0" />
+               <number name="global_module_id_vendor_id" size="2" value="0x8086" />
+               <function_hash name="image_hash">
+                  <sha value="256" />
+                  <input>
+                     <data path="parent/parent/parent/manuf" />
+                  </input>
+               </function_hash>
+            </module_attribute_extension>
+            <process_attribute_extension>
+               <number name="extension_type" size="4" value="5" />
+               <number name="extension_length" size="4" calculate="parent.size" />
+               <bit_field name="flags" size="4">
+                  <bit name="fault_tolerant" bit_low="0" bit_high="0" value="0" />
+                  <bit name="permanent_process" bit_low="1" bit_high="1" value="1" />
+                  <bit name="single_instance" bit_low="2" bit_high="2" value="1" />
+                  <bit name="trusted_snd_rev_sender" bit_low="3" bit_high="3" value="0" />
+                  <bit name="trusted_notify_sender" bit_low="4" bit_high="4" value="0" />
+                  <bit name="public_snd_rev_receiver" bit_low="5" bit_high="5" value="0" />
+                  <bit name="public_notify_receiver" bit_low="6" bit_high="6" value="0" />
+                  <bit name="reserved" bit_low="7" bit_high="31" value="0" />
+               </bit_field>
+               <number name="main_thread_id" size="4" value="0xC" />
+               <number name="private_code_base_address" size="4" calculate="/settings/manuf_elf.image_text_start" />
+               <number name="uncompressed_private_code_size" size="4" calculate="/settings/manuf_elf.image_text_end - /settings/manuf_elf.image_text_start" />
+               <number name="reserved" size="4" value="0" />
+               <number name="bss_size" size="4" calculate="/settings/manuf_elf.image_ram_end - /settings/manuf_elf.image_ram_start" />
+               <number name="default_heap_size" size="4" value="0x1000" />
+               <number name="main_thread_entry_point" size="4" calculate="/settings/manuf_elf.entry_address" />
+               <number name="reserved" size="28" value="0" />
+            </process_attribute_extension>
+         </metadata>
+
+         <byte_array name="rbe" calculate="/settings/rbe_elf.bin" />
+
+         <byte_array name="manuf" calculate="/settings/manuf_elf.bin" />
+
+         <byte_array offset="parent.offset + 0x100000" size="0" value="" />
+      </partition>
+
+      <partition name="fcp" align="0x1000">
+         <header>
+            <number name="partition_type" size="1" value="0" />
+            <number name="mfs_version" size="1" value="0" />
+            <number name="fw_version_major" size="1" value="0" />
+            <number name="fw_version_minor" size="1" value="0" />
+            <signature>
+               <bytearray offset="parent.offset + 512" size="0" value="" />
+            </signature>
+            <number name="file_count" size="4" calculate="parent/file_descriptors.child_count - 1" />
+            <file_descriptors>
+               <file_descriptor>
+                  <number name="file_id" size="4" value="7" />
+                  <number name="reserved" size="4" value="0" />
+                  <number name="offset" size="4" calculate="parent/parent/parent/parent/me_files/factory_configuration.offset - parent/parent/parent/parent.offset" />
+                  <number name="data_size" size="4" calculate="parent/parent/parent/parent/me_files/factory_configuration.size" />
+                  <number name="file_crc" size="4" value="0" />
+               </file_descriptor>
+               <placeholder offset="parent.offset + 11 * 20" size="0" value="" />
+            </file_descriptors>
+            <number name="header_crc" size="4" value="0" />
+         </header>
+         <me_files>
+            <factory_configuration>
+               <bit_field name="dword0" size="4">
+                  <bit name="flash_emulation_enabled" bit_low="0" bit_high="0" value="1" />
+                  <bit name="manufacture_flow" bit_low="1" bit_high="2" value="2" />
+                  <bit name="ie_key_seed_scrambled" bit_low="3" bit_high="3" value="0" />
+                  <bit name="ie_verified_bootenabled" bit_low="4" bit_high="4" value="0" />
+                  <bit name="rsa_pkcs1_5_disable" bit_low="5" bit_high="5" value="0" />
+                  <bit name="reserved0" bit_low="6" bit_high="31" value="0" />
+               </bit_field>
+               <byte_array name="oem_key_hash_zeros" enabled="/settings/oem_signing_key_bin.size == 0" size="32" value="0" />
+               <function_hash name="oem_key_hash" enabled="/settings/oem_signing_key_bin.size != 0" >
+                  <sha value="256" />
+                  <input>
+                     <data value="/settings/oem_signing_key_bin.modulus" />
+                     <data value="/settings/oem_signing_key_bin.exponent" />
+                  </input>
+               </function_hash>
+               <byte_array name="oem_debug_key_hash" size="32" value="0" />
+               <byte_array name="ie_key_seed" size="32" value="0" />
+               <number name="dk_rev" size="2" value="0x0" />
+               <number name="me_fw_rev" size="2" value="0x0" />
+               <number name="ie_fw_rev" size="2" value="0x0" />
+               <number name="reserved1" size="2" value="0" />
+            </factory_configuration>
+         </me_files>
+         <byte_array offset="parent.offset + 0x1000" size="0" value="" />
+      </partition>
+   </layout>
+</ibst>

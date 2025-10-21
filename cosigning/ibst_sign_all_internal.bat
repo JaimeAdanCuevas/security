@@ -26,7 +26,7 @@ if %errorlevel% neq 0 (
 )
 
 echo                 ################# Signing msrtest.efi tool #################
-"%PY_PATH%" "%IBST_DIR%\ibst.py" "%IBST_DIR%\config\CoSigningManifest.xml" --config_override "%OVERRIDE_DIR%\CoSigningManifest_msrtest_override.xml" -s key="%KEY_DIR%\3k_test_key_private.pem" module_bin="%INPUT_DIR%\msrtest.efi" output_name="%OUTPUT_DIR%\msrtest.efi.bin"
+::"%PY_PATH%" "%IBST_DIR%\ibst.py" "%IBST_DIR%\config\CoSigningManifest.xml" --config_override "%OVERRIDE_DIR%\CoSigningManifest_msrtest_override.xml" -s key="%KEY_DIR%\3k_test_key_private.pem" module_bin="%INPUT_DIR%\msrtest.efi" output_name="%OUTPUT_DIR%\msrtest.efi.bin"
 if %errorlevel% neq 0 (
     echo ERROR: Failed to sign msrtest.efi - Error code: %errorlevel%
     pause

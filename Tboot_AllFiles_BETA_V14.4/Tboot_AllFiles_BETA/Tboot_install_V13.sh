@@ -16,7 +16,7 @@ export ftp_proxy="http://proxy-dmz.intel.com:911"
 export socks_proxy="http://proxy-us.intel.com:1080"
 export no_proxy="intel.com,.intel.com,localhost,127.0.0.1"
 
-echo -n "Select your OS --> 1.Centos, 2.RHEL, 3.SLES: "
+echo -n "Select your OS --> 1.CentOS, 2.RHEL8, 3.SLES, 4.RHEL9.2: "
 read VAR
 if [[ $VAR -eq 1 ]]
 then
@@ -127,4 +127,76 @@ make install
 cd ..
 grub2-mkconfig -o /boot/grub2/grub.cfg
 echo "Installation Complete"
+elif [[ $VAR -eq 4 ]]; then
+    echo "=== RHEL 9.2 (No USB) ==="
+
+    # Proxy
+    cp proxy.sh /etc/profile.d/
+    echo "Copying proxy.sh"
+    source /etc/profile.d/proxy.sh
+
+    # Network patch
+    bash NetworkPatch_IT_script.sh || { echo "Network patch failed"; exit 1; }
+
+    # Backup & clean old repos
+    [ -d /etc/yum.repos.d ] && mv /etc/yum.repos.d /etc/yum.repos.d.bak.$(date +%s)
+    mkdir -p /etc/yum.repos.d
+
+    # Copy pre-made repo file
+    if [[ -f rhel92-local.repo ]]; then
+        cp rhel92-local.repo /etc/yum.repos.d/
+        echo "Copied rhel92-local.repo"
+        dnf clean all
+        dnf makecache
+    else
+        echo "ERROR: rhel92-local.repo not found! Using subscription-manager fallback."
+        # Optional: auto-register (uncomment if needed)
+        # read -p "RHN Username: " RH_USER
+        # read -s -p "RHN Password: " RH_PASS; echo
+        # subscription-manager register --username "$RH_USER" --password "$RH_PASS" --auto-attach
+        # subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms
+    fi
+
+    echo "If the installation doesn't continue after 10 seconds please stop this script and do a reboot"
+    sleep 2
+
+    # Install packages
+    dnf install -y python3 python3-devel grub2-efi-x64-modules grub2-efi-x64 openssl-devel grub2-efi-modules xterm tpm-tools tpm2-tools mercurial
+    dnf install -y python3-pip swig gtk3-devel libxslt-devel
+
+    dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+    #dnf config-manager --set-enabled crb
+    dnf install -y trousers-devel
+
+    pip3 install --trusted-host pypi.python.org pyasn1 m2crypto
+
+    # Volatility
+    cp volatility /usr/local/sbin/
+    chmod 755 /usr/local/sbin/volatility
+
+    # val_tools
+    echo "Installing val_tools..."
+    sleep 2
+    cp -r val_tools /root/
+    chmod 755 /root/val_tools/SIV/NonProjectSpecific/TestContent/*
+    ln -s /root/val_tools /usr/local/val_tools
+
+    # tboot
+    echo "Installing tboot..."
+    sleep 2
+    tar -zxvf tboot-1.10.5.tar.gz
+    cd tboot-1.10.5
+    make all && make install || { echo "tboot build failed"; exit 1; }
+    cd ..
+    rm -rf tboot-1.10.5
+
+    # GRUB
+    mkdir -p /boot/efi/EFI/redhat
+    cp -r /usr/lib/grub/x86_64-efi /boot/efi/EFI/redhat/
+    grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+
+    [ -f Change_scrip_rhel92.py ] && python3 Change_scrip_rhel92.py
+    chmod +x /boot/efi/EFI/redhat/grub.cfg
+
+    echo "Installation Complete"
 fi

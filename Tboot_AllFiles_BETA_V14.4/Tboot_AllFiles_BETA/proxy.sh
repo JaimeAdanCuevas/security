@@ -1,7 +1,6 @@
 # Intel proxy setup for yum
-export http_proxy=http://proxy-chain.intel.com:911
-export HTTP_PROXY=http://proxy-chain.intel.com:911
-export https_proxy=http://proxy-chain.intel.com:911
-export HTTPS_PROXY=http://proxy-chain.intel.com:911
-export https_proxy=https://proxy-chain.intel.com:912
-export HTTPS_PROXY=https://proxy-chain.intel.com:912
+export http_proxy=http://proxy-dmz.intel.com:912
+export https_proxy=http://proxy-dmz.intel.com:912
+export ftp_proxy=http://proxy-dmz.intel.com:911
+export socks_proxy=http://proxy-us.intel.com:1080
+export no_proxy=intel.com,.intel.com,localhost,127.0.0.1
